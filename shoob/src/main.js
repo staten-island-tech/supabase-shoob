@@ -1,6 +1,10 @@
-import { createApp } from "vue";
-import "./style.css";
-import App from "./App.vue";
 
-createApp(App).mount("#app");
-//firebase apphosting:backends:create --project shoob-98995 --location us-central1
+import { createApp } from 'vue';
+import './style.css';
+import App from './App.vue';
+import router from './router';  // Import the router configuration
+
+createApp(App)
+  .use(router)  // Use the router
+  .mount('#app');  // Mount the app
+
