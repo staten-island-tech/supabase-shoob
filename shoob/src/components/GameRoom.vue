@@ -1,15 +1,15 @@
 <template>
   <div>
     <h2>Game Room: {{ roomId }}</h2>
-    <p>Game State: {{ gameState.gameState || 'Loading...' }}</p>
+    <p>Game State: {{ gameState.gameState || 'omg its loading fr' }}</p>
     <button @click="updateGameState('playing')">Start Game</button>
-    <button @click="createGameRoom">Reset Room</button>
+    <button @click="createRoom()">Reset Room</button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { db } from '../firebaseConfig'
+import { ref, onMounted } from 'vue'
+import { db } from '/firebaseConfig.js'
 import { getDatabase, ref as dbRef, set, onValue, update } from 'firebase/database'
 
 const roomId = ref('room1')
@@ -32,18 +32,17 @@ function listenForGameState() {
   })
 }
 
-function updateGameState() {
-    await update(dbRef(db, `rooms/${roomId.value}`), {
-    gameState: newState
-  });
+async function updateGameState(newState) {
+  await update(dbRef(db, `rooms/${roomId.value}`), {
+    gameState: newState,
+  })
 }
-
-// join room
 
 // leave room
 
 onMounted(() => {
-    listenForGameState();
+  listenForGameState()
+})
 </script>
 
 <style scoped></style>
