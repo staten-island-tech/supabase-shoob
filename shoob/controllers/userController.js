@@ -17,6 +17,8 @@ async function registerUser(email, password) {
   }
 }
 
+registerUser('help@gmail.com', 'password123')
+
 async function loginUser(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password)
@@ -45,3 +47,5 @@ async function logoutUser() {
     console.error('sign out error:', error.message)
   }
 }
+
+export { registerUser }

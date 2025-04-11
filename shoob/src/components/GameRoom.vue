@@ -12,6 +12,8 @@ import { ref, onMounted } from 'vue'
 import { db } from '/firebaseConfig.js'
 import { getDatabase, ref as dbRef, set, onValue, update } from 'firebase/database'
 
+import { registerUser } from '../../controllers/userController'
+
 const roomId = ref('room1')
 const gameState = ref({})
 
