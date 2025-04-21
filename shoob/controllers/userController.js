@@ -4,7 +4,7 @@ import {
   onAuthStateChanged,
   signOut,
 } from 'firebase/auth'
-import { auth } from './firebaseConfig'
+import { auth } from '../firebaseConfig'
 
 async function registerUser(email, password) {
   try {
