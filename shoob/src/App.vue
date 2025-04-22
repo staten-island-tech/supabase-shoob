@@ -1,7 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import LoginComponent from './components/LoginComponent.vue'
 import PlayerProfile from './views/PlayerProfile.vue'
 </script>
 
@@ -9,7 +8,6 @@ import PlayerProfile from './views/PlayerProfile.vue'
   <div>
     <header>
       <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-      <LoginComponent />
       <div class="wrapper">
         <HelloWorld msg="You did it!" />
         <nav>

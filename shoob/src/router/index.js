@@ -8,6 +8,11 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'pluh',
+      component: LoginPage,
+    },
+    {
+      path: '/login',
       name: 'login',
       component: LoginPage,
     },
