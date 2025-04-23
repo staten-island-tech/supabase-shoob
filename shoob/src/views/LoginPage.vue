@@ -1,23 +1,28 @@
 <template>
-  <div class="about">
-    <input
-      class="emailForm"
-      type="email"
-      name="email"
-      v-model="emailQuery"
-      placeholder="put in ur email silly goose"
-    />
-    <button @click="submitEmail">Submit</button>
+  <div class="register">
+    <form @submit.prevent="handleRegister">
+      <input v-model="email" type="email" placeholder="Email" required />
+      <input v-model="password" type="password" placeholder="Password" required />
+      <button type="submit">Register</button>
+    </form>
   </div>
 </template>
 
 <script setup>
 import { ref, defineProps } from 'vue'
-const emailQuery = ref('')
+import { registerUser } from '../../controllers/userController'
 
-function submitEmail() {
-  console.log(emailQuery.value)
-  emailQuery.value = ''
+const email = ref('')
+const password = ref('')
+const error = ref('')
+
+async function handleRegister() {
+  try {
+    await registerUser(email.value, password.value)
+    window.location.href = '/lobby'
+  } catch (err) {
+    error.value = err.message
+  }
 }
 </script>
 

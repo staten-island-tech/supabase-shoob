@@ -1,13 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/GameLobby.vue'
 import LoginPage from '../views/LoginPage.vue'
-import GameRoom from '@/views/GameRoom.vue'
+import GameRoom from '../views/GameRoom.vue'
+//import { auth } from '@/firebaseConfig.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: '/login',
       name: 'login',
       component: LoginPage,
     },
@@ -23,8 +24,11 @@ const router = createRouter({
       path: '/gameroom',
       name: 'gameroom',
       component: GameRoom,
+      meta: { requiresAuth: true },
     },
   ],
 })
+
+//router.beforeEach((to, from, next) => {})
 
 export default router

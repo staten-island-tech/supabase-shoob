@@ -4,7 +4,7 @@ import {
   onAuthStateChanged,
   signOut,
 } from 'firebase/auth'
-import { auth } from './firebaseConfig'
+import { auth } from '../firebaseConfig'
 
 async function registerUser(email, password) {
   try {
@@ -16,6 +16,8 @@ async function registerUser(email, password) {
     console.error('register error:', error.message)
   }
 }
+
+registerUser('a@gmail.com', 'password123')
 
 async function loginUser(email, password) {
   try {
@@ -45,3 +47,5 @@ async function logoutUser() {
     console.error('sign out error:', error.message)
   }
 }
+
+export { registerUser }
