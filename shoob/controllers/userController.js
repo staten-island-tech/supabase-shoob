@@ -17,8 +17,6 @@ async function registerUser(email, password) {
   }
 }
 
-registerUser('a@gmail.com', 'password123')
-
 async function loginUser(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password)
