@@ -17,7 +17,7 @@ async function registerUser(email, password) {
   }
 }
 
-registerUser('help@gmail.com', 'password123')
+registerUser('a@gmail.com', 'password123')
 
 async function loginUser(email, password) {
   try {
