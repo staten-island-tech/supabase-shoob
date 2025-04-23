@@ -1,18 +1,15 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 import PlayerProfile from './views/PlayerProfile.vue'
 </script>
 
 <template>
   <div>
     <header>
-      <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
       <div class="wrapper">
-        <HelloWorld msg="You did it!" />
         <nav>
-          <RouterLink to="/login">Home</RouterLink>
-          <RouterLink to="/lobby">About</RouterLink>
+          <RouterLink to="/login">login</RouterLink>
+          <RouterLink to="/lobby">lobby</RouterLink>
         </nav>
       </div>
     </header>
