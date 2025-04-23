@@ -1,12 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomePage from '../views/HomePage.vue'
 import HomeView from '../views/GameLobby.vue'
-import LoginPage from '../views/LoginPage.vue'
+import SignupPage from '../views/SignupPage.vue'
 import GameRoom from '../views/GameRoom.vue'
+import LoginPage from '../views/LoginPage.vue'
 //import { auth } from '@/firebaseConfig.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/',
+      name: 'start',
+      component: HomePage,
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: SignupPage,
+    },
     {
       path: '/login',
       name: 'login',

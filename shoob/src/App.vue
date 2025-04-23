@@ -9,7 +9,7 @@ import PlayerProfile from './views/PlayerProfile.vue'
       <div class="wrapper">
         <nav>
           <RouterLink to="/login">login</RouterLink>
-          <RouterLink to="/lobby">lobby</RouterLink>
+          <RouterLink to="/signup">sign up</RouterLink>
         </nav>
       </div>
     </header>
