@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../views/HomePage.vue'
 import HomeView from '../views/GameLobby.vue'
-import SignupPage from '../views/SignupPage.vue'
 import GameRoom from '../views/GameRoom.vue'
 import LoginPage from '../views/LoginPage.vue'
 //import { auth } from '@/firebaseConfig.js'
@@ -13,11 +12,6 @@ const router = createRouter({
       path: '/',
       name: 'start',
       component: HomePage,
-    },
-    {
-      path: '/signup',
-      name: 'signup',
-      component: SignupPage,
     },
     {
       path: '/login',
