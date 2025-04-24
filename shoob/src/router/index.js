@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/GameLobby.vue'
 import LoginPage from '../views/LoginPage.vue'
 import GameRoom from '../views/GameRoom.vue'
-//import { auth } from '@/firebaseConfig.js'
+import { auth } from '../../firebaseConfig.js'
 import { onAuthStateChanged } from 'firebase/auth'
 
 const router = createRouter({
@@ -36,6 +36,7 @@ router.beforeEach((to, from, next) => {
   if (!requiresAuth) return next()
 
   const unsubscribe = onAuthStateChanged(auth, (user) => {
+    console.log('auth state changed, ', user)
     unsubscribe()
     if (user) next()
     else next('/login')
