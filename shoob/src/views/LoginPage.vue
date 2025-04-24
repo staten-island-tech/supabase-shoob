@@ -1,25 +1,42 @@
 <template>
   <div class="register">
-    <form @submit.prevent="handleRegister">
+    <select v-model="signInOption" name="sign-in-option" id="sign-in-option">
+      <option value="in">sign in</option>
+      <option value="up">sign up</option>
+    </select>
+
+    <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
       <input v-model="email" type="email" placeholder="Email" required />
       <input v-model="password" type="password" placeholder="Password" required />
       <button type="submit">Register</button>
+    </form>
+    <form v-if="signInOption === 'in'" @submit.prevent="handleSign">
+      <input v-model="email" type="email" placeholder="Email" required />
+      <input v-model="password" type="password" placeholder="Password" required />
+      <button type="submit">Sign In</button>
     </form>
   </div>
 </template>
 
 <script setup>
 import { ref, defineProps } from 'vue'
-import { registerUser } from '../../controllers/userController'
+import { registerUser, loginUser } from '../../controllers/userController'
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 
-async function handleRegister() {
+const signInOption = ref('in')
+
+async function handleSign() {
   try {
-    await registerUser(email.value, password.value)
-    window.location.href = '/lobby'
+    if (signInOption.value === 'up') {
+      await registerUser(email.value, password.value)
+      console.log('sign-up successsful')
+    } else {
+      await loginUser(email.value, password.value)
+    }
+    //window.location.href = '/lobby'
   } catch (err) {
     error.value = err.message
   }
