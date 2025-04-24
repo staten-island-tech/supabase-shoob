@@ -46,4 +46,4 @@ async function logoutUser() {
   }
 }
 
-export { registerUser }
+export { registerUser, loginUser }
