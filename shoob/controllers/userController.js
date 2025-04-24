@@ -20,9 +20,11 @@ async function registerUser(email, password) {
 
 async function loginUser(email, password) {
   try {
+    await setPersistence(auth, browserLocalPersistence)
     const userCredential = await signInWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
     console.log('logged in:', user.email)
+    router.push('/gameroom')
   } catch (error) {
     console.error('login error:', error.message)
   }
