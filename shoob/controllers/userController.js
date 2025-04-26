@@ -4,8 +4,10 @@ import {
   onAuthStateChanged,
   signOut,
   setPersistence,
+  browserLocalPersistence,
 } from 'firebase/auth'
 import { auth } from '../firebaseConfig'
+import router from '../src/router'
 
 async function registerUser(email, password) {
   try {
@@ -49,4 +51,4 @@ async function logoutUser() {
   }
 }
 
-export { registerUser, loginUser }
+export { registerUser, loginUser, logoutUser }

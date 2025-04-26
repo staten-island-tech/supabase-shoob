@@ -25,7 +25,7 @@ const router = createRouter({
       path: '/gameroom',
       name: 'gameroom',
       component: GameRoom,
-      meta: { requiresAuth: true },
+      //meta: { requiresAuth: true },
     },
   ],
 })
@@ -33,14 +33,18 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
 
-  if (!requiresAuth) return next()
+  if (!requiresAuth) {
+    next()
+    return
+  }
 
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    console.log('auth state changed, ', user)
-    unsubscribe()
-    if (user) next()
-    else next('/login')
-  })
+  const user = auth.currentUser
+
+  if (user) {
+    next()
+  } else {
+    next('/login')
+  }
 })
 
 export default router

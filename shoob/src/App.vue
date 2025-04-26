@@ -1,15 +1,12 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import PlayerProfile from './views/PlayerProfile.vue'
-</script>
-
 <template>
   <div>
     <header>
       <div class="wrapper">
         <nav>
-          <RouterLink to="/login">login</RouterLink>
+          <RouterLink v-if="authStore.user" to="/gameroom">Game Room</RouterLink>
+          <RouterLink v-if="!authStore.user" to="/login">Login</RouterLink>
           <RouterLink to="/lobby">lobby</RouterLink>
+          <button v-if="authStore.user" @click="logout">Logout</button>
         </nav>
       </div>
     </header>
@@ -17,6 +14,20 @@ import PlayerProfile from './views/PlayerProfile.vue'
     <RouterView />
   </div>
 </template>
+
+<script setup>
+import { RouterLink, RouterView } from 'vue-router'
+
+import { useAuthStore } from './stores/authStore'
+import { logoutUser } from './../controllers/userController'
+
+const authStore = useAuthStore()
+const user = authStore.user
+
+async function logout() {
+  await logoutUser()
+}
+</script>
 
 <style scoped>
 header {
