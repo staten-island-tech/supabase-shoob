@@ -3,8 +3,11 @@ import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut,
+  setPersistence,
+  browserLocalPersistence,
 } from 'firebase/auth'
 import { auth } from '../firebaseConfig'
+import router from '../src/router'
 
 async function registerUser(email, password) {
   try {
@@ -19,15 +22,17 @@ async function registerUser(email, password) {
 
 async function loginUser(email, password) {
   try {
+    await setPersistence(auth, browserLocalPersistence)
     const userCredential = await signInWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
     console.log('logged in:', user.email)
+    router.push('/gameroom')
   } catch (error) {
     console.error('login error:', error.message)
   }
 }
 
-function monitorAuthState() {
+/* function monitorAuthState() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       console.log('user is signed in:', user.email)
@@ -35,15 +40,16 @@ function monitorAuthState() {
       console.log('user is signed out')
     }
   })
-}
+} */
 
 async function logoutUser() {
   try {
     await signOut(auth)
     console.log('signed out')
+    router.push('/')
   } catch (error) {
     console.error('sign out error:', error.message)
   }
 }
 
-export { registerUser, loginUser }
+export { registerUser, loginUser, logoutUser }

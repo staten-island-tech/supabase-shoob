@@ -1,4 +1,22 @@
+<template>
+  <div class="stuff">
+    <header>
+      <div class="wrapper">
+        <nav>
+          <RouterLink v-if="authStore.user" to="/gameroom">Game Room</RouterLink>
+          <RouterLink v-if="authStore.user" to="/lobby">lobby</RouterLink>
+          <button v-if="authStore.user" @click="logout">Logout</button>
+        </nav>
+      </div>
+    </header>
+
+    <RouterView />
+  </div>
+</template>
+
 <script setup>
+import { useAuthStore } from './stores/authStore'
+import { logoutUser } from './../controllers/userController'
 import { RouterLink, RouterView } from 'vue-router'
 import PlayerProfile from './views/PlayerProfile.vue'
 
@@ -11,19 +29,13 @@ special mole you have to prioritize or you explode
 presets: whales + whalen? whalen + henriqueses
 normal mole and special mole
 */
+const authStore = useAuthStore()
+const user = authStore.user
+
+async function logout() {
+  await logoutUser()
+}
 </script>
-
-<template>
-  <div class="stuff">
-    <header>
-      <div class="wrapper">
-        <nav></nav>
-      </div>
-    </header>
-
-    <RouterView />
-  </div>
-</template>
 
 <style scoped>
 header {
