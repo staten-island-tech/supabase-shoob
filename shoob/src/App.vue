@@ -7,6 +7,9 @@ Whack a mole
 special mole gives currency, which you can spend with keybinds to sabotage other person
 turn other persons screen a different color
 special mole you have to prioritize or you explode
+
+presets: whales + whalen? whalen + henriqueses
+normal mole and special mole
 */
 </script>
 
