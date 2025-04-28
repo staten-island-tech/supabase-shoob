@@ -36,7 +36,6 @@ async function handleSign() {
     } else {
       await loginUser(email.value, password.value)
     }
-    //window.location.href = '/lobby'
   } catch (err) {
     error.value = err.message
   }

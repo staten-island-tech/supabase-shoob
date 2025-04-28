@@ -32,7 +32,7 @@ async function loginUser(email, password) {
   }
 }
 
-function monitorAuthState() {
+/* function monitorAuthState() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       console.log('user is signed in:', user.email)
@@ -40,7 +40,7 @@ function monitorAuthState() {
       console.log('user is signed out')
     }
   })
-}
+} */
 
 async function logoutUser() {
   try {
