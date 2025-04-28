@@ -1,16 +1,20 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import PlayerProfile from './views/PlayerProfile.vue'
+
+/*IDEAS:
+Whack a mole
+special mole gives currency, which you can spend with keybinds to sabotage other person
+turn other persons screen a different color
+special mole you have to prioritize or you explode
+*/
 </script>
 
 <template>
-  <div>
+  <div class="stuff">
     <header>
       <div class="wrapper">
-        <nav>
-          <RouterLink to="/login">login</RouterLink>
-          <RouterLink to="/signup">sign up</RouterLink>
-        </nav>
+        <nav></nav>
       </div>
     </header>
 
@@ -54,5 +58,9 @@ header {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+}
+
+.stuff {
+  background-color: white;
 }
 </style>

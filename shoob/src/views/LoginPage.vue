@@ -1,5 +1,7 @@
 <template>
   <div class="register">
+    <h1>hasfhfdjshgkjdhsgkj</h1>
+
     <button class="loginButtons" @click="selectLogin">Log in</button>
     <button class="loginButtons" @click="selectSignup">Sign up</button>
 
@@ -67,10 +69,14 @@ async function handleSign() {
   text-align: center;
   margin-top: 2rem;
   color: var(--color-text);
-  background-color: transparent;
+  background-color: pink;
   display: inline-block;
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
   border: 0;
+}
+
+.register {
+  width: 30rem;
 }
 </style>
