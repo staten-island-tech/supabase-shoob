@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div class="stuff">
     <header>
       <div class="wrapper">
         <nav>
           <RouterLink v-if="authStore.user" to="/gameroom">Game Room</RouterLink>
           <RouterLink v-if="!authStore.user" to="/login">Login</RouterLink>
-          <RouterLink to="/lobby">lobby</RouterLink>
+          <RouterLink v-if="authStore.user" to="/lobby">lobby</RouterLink>
           <button v-if="authStore.user" @click="logout">Logout</button>
         </nav>
       </div>
@@ -16,11 +16,20 @@
 </template>
 
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-
 import { useAuthStore } from './stores/authStore'
 import { logoutUser } from './../controllers/userController'
+import { RouterLink, RouterView } from 'vue-router'
+import PlayerProfile from './views/PlayerProfile.vue'
 
+/*IDEAS:
+Whack a mole
+special mole gives currency, which you can spend with keybinds to sabotage other person
+turn other persons screen a different color
+special mole you have to prioritize or you explode
+
+presets: whales + whalen? whalen + henriqueses
+normal mole and special mole
+*/
 const authStore = useAuthStore()
 const user = authStore.user
 
@@ -38,31 +47,6 @@ header {
 .logo {
   display: block;
   margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
 }
 
 @media (min-width: 1024px) {
@@ -90,5 +74,9 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+}
+
+.stuff {
+  background-color: white;
 }
 </style>

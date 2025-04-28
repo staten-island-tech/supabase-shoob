@@ -1,9 +1,9 @@
 <template>
   <div class="register">
-    <select v-model="signInOption" name="sign-in-option" id="sign-in-option">
-      <option value="in">sign in</option>
-      <option value="up">sign up</option>
-    </select>
+    <h1>hasfhfdjshgkjdhsgkj</h1>
+
+    <button class="loginButtons" @click="selectLogin">Log in</button>
+    <button class="loginButtons" @click="selectSignup">Sign up</button>
 
     <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
       <input v-model="email" type="email" placeholder="Email" required />
@@ -19,6 +19,8 @@
 </template>
 
 <script setup>
+//<p v-if="error">Invalid user or password</p>
+
 import { ref, defineProps } from 'vue'
 import { registerUser, loginUser } from '../../controllers/userController'
 
@@ -28,6 +30,13 @@ const error = ref('')
 
 const signInOption = ref('in')
 
+function selectLogin() {
+  signInOption.value = 'in'
+}
+function selectSignup() {
+  signInOption.value = 'up'
+}
+
 async function handleSign() {
   try {
     if (signInOption.value === 'up') {
@@ -36,6 +45,10 @@ async function handleSign() {
     } else {
       await loginUser(email.value, password.value)
     }
+    //check out what the below does
+    //email.value = ''
+    //password.value = ''
+    //window.location.href = '/lobby'
   } catch (err) {
     error.value = err.message
   }
@@ -49,5 +62,22 @@ async function handleSign() {
     display: flex;
     align-items: center;
   }
+}
+
+.loginButtons {
+  width: 100%;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 2rem;
+  color: var(--color-text);
+  background-color: pink;
+  display: inline-block;
+  padding: 0 1rem;
+  border-left: 1px solid var(--color-border);
+  border: 0;
+}
+
+.register {
+  width: 30rem;
 }
 </style>

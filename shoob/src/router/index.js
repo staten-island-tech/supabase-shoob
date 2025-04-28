@@ -1,13 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomePage from '../views/HomePage.vue'
 import HomeView from '../views/GameLobby.vue'
-import LoginPage from '../views/LoginPage.vue'
 import GameRoom from '../views/GameRoom.vue'
+import LoginPage from '../views/LoginPage.vue'
 import { auth } from '../../firebaseConfig.js'
 import { onAuthStateChanged } from 'firebase/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/',
+      redirect: '/login',
+    },
     {
       path: '/login',
       name: 'login',
