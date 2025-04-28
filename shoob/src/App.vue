@@ -4,7 +4,6 @@
       <div class="wrapper">
         <nav>
           <RouterLink v-if="authStore.user" to="/gameroom">Game Room</RouterLink>
-          <RouterLink v-if="!authStore.user" to="/login">Login</RouterLink>
           <RouterLink v-if="authStore.user" to="/lobby">lobby</RouterLink>
           <button v-if="authStore.user" @click="logout">Logout</button>
         </nav>
