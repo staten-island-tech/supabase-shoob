@@ -19,18 +19,28 @@ const router = createRouter({
       component: LoginPage,
     },
     {
+      // to see all avaliable rooms
       path: '/lobby',
       name: 'lobby',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/GameLobby.vue'),
+      meta: { requiresAuth: true },
     },
     {
+      //for when someone joins a room, figure out how to attach a unique id to it? or just consolidate it with lobby? or just make this the actual room when the game is running
       path: '/gameroom',
       name: 'gameroom',
       component: GameRoom,
-      //meta: { requiresAuth: true },
+      meta: { requiresAuth: true },
+    },
+    {
+      //
+      path: '/profile',
+      name: 'profile',
+      component: GameRoom,
+      meta: { requiresAuth: true },
     },
   ],
 })
