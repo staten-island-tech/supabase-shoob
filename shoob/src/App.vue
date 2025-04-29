@@ -10,6 +10,11 @@ special mole you have to prioritize or you explode
 
 presets: whales + whalen? whalen + henriqueses
 normal mole and special mole
+
+big fat mole that blocks screen until key pressed enough times / certain key is chosen'
+
+freeze screen (one specific key i.e. k always unfreezes)
+spawn a mole that cant be clicked
 */
 </script>
 
