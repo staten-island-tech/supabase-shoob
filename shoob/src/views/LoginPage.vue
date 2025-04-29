@@ -45,8 +45,9 @@ async function handleSign() {
     } else {
       await loginUser(email.value, password.value)
     }
-    email.value = ''
-    password.value = ''
+    //check out what the below does
+    //email.value = ''
+    //password.value = ''
     //window.location.href = '/lobby'
   } catch (err) {
     error.value = err.message

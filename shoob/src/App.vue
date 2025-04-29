@@ -1,4 +1,22 @@
+<template>
+  <div class="stuff">
+    <header>
+      <div class="wrapper">
+        <nav>
+          <RouterLink v-if="authStore.user" to="/gameroom">Game Room</RouterLink>
+          <RouterLink v-if="authStore.user" to="/lobby">lobby</RouterLink>
+          <button v-if="authStore.user" @click="logout">Logout</button>
+        </nav>
+      </div>
+    </header>
+
+    <RouterView />
+  </div>
+</template>
+
 <script setup>
+import { useAuthStore } from './stores/authStore'
+import { logoutUser } from './../controllers/userController'
 import { RouterLink, RouterView } from 'vue-router'
 import PlayerProfile from './views/PlayerProfile.vue'
 
@@ -16,19 +34,13 @@ big fat mole that blocks screen until key pressed enough times / certain key is 
 freeze screen (one specific key i.e. k always unfreezes)
 spawn a mole that cant be clicked
 */
+const authStore = useAuthStore()
+const user = authStore.user
+
+async function logout() {
+  await logoutUser()
+}
 </script>
-
-<template>
-  <div class="stuff">
-    <header>
-      <div class="wrapper">
-        <nav></nav>
-      </div>
-    </header>
-
-    <RouterView />
-  </div>
-</template>
 
 <style scoped>
 header {

@@ -3,15 +3,15 @@ import HomePage from '../views/HomePage.vue'
 import HomeView from '../views/GameLobby.vue'
 import GameRoom from '../views/GameRoom.vue'
 import LoginPage from '../views/LoginPage.vue'
-//import { auth } from '@/firebaseConfig.js'
+import { auth } from '../../firebaseConfig.js'
+import { onAuthStateChanged } from 'firebase/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'start',
-      component: HomePage,
+      redirect: '/login',
     },
     {
       path: '/login',
@@ -30,11 +30,26 @@ const router = createRouter({
       path: '/gameroom',
       name: 'gameroom',
       component: GameRoom,
-      meta: { requiresAuth: true },
+      //meta: { requiresAuth: true },
     },
   ],
 })
 
-//router.beforeEach((to, from, next) => {})
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+
+  if (!requiresAuth) {
+    next()
+    return
+  }
+
+  const user = auth.currentUser
+
+  if (user) {
+    next()
+  } else {
+    next('/login')
+  }
+})
 
 export default router
