@@ -6,7 +6,7 @@
         <button @click="selectRoom(id)">{{ id }}</button>
       </li>
     </ul>
-    <input v-model="newRoomId" placeholder="New Room Name" />
+    <input v-model="newRoomId" placeholder="new room name" />
     <button @click="createRoom(newRoomId)">Create Room</button>
 
     <hr />
@@ -37,7 +37,8 @@ function selectRoom(id) {
 }
 
 async function createRoom(id) {
-  await set(dbRef(db, `rooms/${id}`), {
+  console.log(id)
+  await set(dbRef(db, 'rooms', `${id}`), {
     players: {},
     gameState: 'waiting',
   })
@@ -48,7 +49,7 @@ async function joinRoom(id) {
   const user = auth.currentUser
   if (!user) return
 
-  await update(dbRef(db, `rooms/${id}/players/${user.uid}`), {
+  await update(dbRef(db, 'rooms', `${id}/players/${user.uid}`), {
     displayName: user.displayName || user.email || 'Player',
   })
 }
@@ -57,7 +58,7 @@ async function leaveRoom() {
   const user = auth.currentUser
   if (!user || !roomId.value) return
 
-  await update(dbRef(db, `rooms/${roomId.value}/players`), {
+  await update(dbRef(db, 'rooms', `${roomId.value}/players`), {
     [user.uid]: null,
   })
 
