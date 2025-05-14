@@ -18,6 +18,7 @@
     <button @click="updateGameState('playing')">Start Game</button>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { db } from '/firebaseConfig.js'
