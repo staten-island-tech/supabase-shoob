@@ -4,17 +4,18 @@
 
     <button class="loginButtons" @click="selectLogin">Log in</button>
     <button class="loginButtons" @click="selectSignup">Sign up</button>
-
-    <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="password" type="password" placeholder="Password" required />
-      <button type="submit">Register</button>
-    </form>
-    <form v-if="signInOption === 'in'" @submit.prevent="handleSign">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="password" type="password" placeholder="Password" required />
-      <button type="submit">Sign In</button>
-    </form>
+    <div class="signInForm">
+      <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
+        <input v-model="email" type="email" placeholder="Email" required />
+        <input v-model="password" type="password" placeholder="Password" required />
+        <button type="submit" class="signInSubmitButtons">Register</button>
+      </form>
+      <form v-if="signInOption === 'in'" @submit.prevent="handleSign">
+        <input v-model="email" type="email" placeholder="Email" required />
+        <input v-model="password" type="password" placeholder="Password" required />
+        <button type="submit" class="signInSubmitButtons">Sign In</button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -64,6 +65,10 @@ async function handleSign() {
   }
 }
 
+.signInForm {
+  display: flex;
+}
+
 .loginButtons {
   width: 100%;
   font-size: 12px;
@@ -75,6 +80,10 @@ async function handleSign() {
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
   border: 0;
+}
+
+.signInSubmitButtons {
+  width: 100%;
 }
 
 .register {
