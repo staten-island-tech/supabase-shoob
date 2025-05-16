@@ -25,11 +25,13 @@ import { db } from '/firebaseConfig.js'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { ref as dbRef, set, onValue, update } from 'firebase/database'
 
-const auth = getAuth()
+const auth = getAuth() //checks if user is currently logged in.. use pinia?
 const roomId = ref('')
 const newRoomId = ref('')
 const gameState = ref({})
 const rooms = ref({})
+
+//when user logs in or logs out
 
 function selectRoom(id) {
   roomId.value = id
@@ -71,6 +73,7 @@ async function leaveRoom() {
   roomId.value = ''
 }
 
+//looks for rooms in the database and calls them
 function listenForRooms() {
   onValue(dbRef(db, 'rooms'), (snapshot) => {
     if (snapshot.exists()) {
@@ -79,6 +82,7 @@ function listenForRooms() {
   })
 }
 
+//when data inside the selected room changes, gameState is changed
 function listenForGameState() {
   onValue(dbRef(db, `rooms/${roomId.value}`), (snapshot) => {
     if (snapshot.exists()) {
