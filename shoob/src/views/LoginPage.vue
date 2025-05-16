@@ -20,8 +20,6 @@
 </template>
 
 <script setup>
-//<p v-if="error">Invalid user or password</p>
-
 import { ref, defineProps } from 'vue'
 import { registerUser, loginUser } from '../../controllers/userController'
 
@@ -51,6 +49,7 @@ async function handleSign() {
     //password.value = ''
     //window.location.href = '/lobby'
   } catch (err) {
+    console.log('error')
     error.value = err.message
   }
 }

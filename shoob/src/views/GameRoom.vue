@@ -1,7 +1,13 @@
 <template>
-  <div></div>
+  <GameRoom />
 </template>
 
-<script setup></script>
+<script setup>
+import GameRoom from '../components/GameRoom.vue'
+</script>
 
-<style scoped></style>
+<style scoped>
+/* * {
+  font-family: 'Impact';
+} */
+</style>
