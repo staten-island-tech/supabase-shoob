@@ -16,6 +16,7 @@
       <li v-for="(player, id) in gameState.players" :key="id">{{ player.displayName }}</li>
     </ul>
     <button @click="updateGameState('playing')">Start Game</button>
+    <button v-if="roomId" @click="leaveRoom">Leave Room</button>
   </div>
 </template>
 
@@ -64,10 +65,9 @@ async function leaveRoom() {
   const user = auth.currentUser
   if (!user || !roomId.value) return
 
-  await update(dbRef(db, `rooms/${roomId.value}/players`)),
-    {
-      [user.uid]: null,
-    }
+  await update(dbRef(db, `rooms/${roomId.value}/players`), {
+    [user.uid]: null,
+  })
 
   gameState.value = {}
   roomId.value = ''
