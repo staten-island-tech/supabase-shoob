@@ -50,6 +50,7 @@ async function createRoom(id) {
   })
   console.log(rooms.value)
   selectRoom(id)
+  newRoomId.value = ''
 }
 
 async function joinRoom(id) {
