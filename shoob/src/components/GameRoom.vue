@@ -50,11 +50,20 @@ async function createRoom(id) {
   })
   console.log(rooms.value)
   selectRoom(id)
+  newRoomId.value = ''
 }
 
 async function joinRoom(id) {
   const user = auth.currentUser
   if (!user) return
+
+  for (const otherRoomId in rooms.value) {
+    if (rooms.value[otherRoomId].players && rooms.value[otherRoomId].players[user.uid]) {
+      await update(dbRef(db, `rooms/${otherRoomId}/players`), {
+        [user.uid]: null,
+      })
+    }
+  }
 
   await update(dbRef(db, `rooms/${id}/players/${user.uid}`), {
     displayName: user.displayName || user.email || 'Player',
@@ -72,6 +81,8 @@ async function leaveRoom() {
   gameState.value = {}
   roomId.value = ''
 }
+
+async function deleteRoom() {}
 
 //looks for rooms in the database and calls them
 function listenForRooms() {
