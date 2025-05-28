@@ -5,7 +5,7 @@ import GameRoom from '../views/GameRoom.vue'
 import LoginPage from '../views/LoginPage.vue'
 import { auth } from '../../firebaseConfig.js'
 import { onAuthStateChanged } from 'firebase/auth'
-import MoleGame from '/views/MoleGame.vue'
+import MoleGame from '../views/MoleGame.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
