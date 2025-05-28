@@ -24,7 +24,7 @@
 import { ref, onMounted } from 'vue'
 import { db } from '/firebaseConfig.js'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { ref as dbRef, set, onValue, update } from 'firebase/database'
+import { ref as dbRef, set, onValue, update, remove, get } from 'firebase/database'
 
 const auth = getAuth() //checks if user is currently logged in.. use pinia?
 const roomId = ref('')
@@ -74,15 +74,24 @@ async function leaveRoom() {
   const user = auth.currentUser
   if (!user || !roomId.value) return
 
-  await update(dbRef(db, `rooms/${roomId.value}/players`), {
-    [user.uid]: null,
-  })
+  const playerRef = dbRef(db, `rooms/${roomId.value}/players/${user.uid}`)
+  const playersRef = dbRef(db, `rooms/${roomId.value}/players`)
+
+  // Remove current player
+  await remove(playerRef)
+
+  // Check if any players remain
+  const snapshot = await get(playersRef)
+  const players = snapshot.val()
+
+  if (!players || Object.keys(players).length === 0) {
+    // Delete the room if no players left
+    await remove(dbRef(db, `rooms/${roomId.value}`))
+  }
 
   gameState.value = {}
   roomId.value = ''
 }
-
-async function deleteRoom() {}
 
 //looks for rooms in the database and calls them
 function listenForRooms() {
