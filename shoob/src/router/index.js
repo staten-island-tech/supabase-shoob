@@ -13,6 +13,11 @@ const router = createRouter({
       path: '/',
       redirect: '/login',
     },
+    /* {
+      path: '/molegame'
+      name: 'molegame',
+      component: a,
+    }, */
     {
       path: '/login',
       name: 'login',
