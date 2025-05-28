@@ -5,6 +5,7 @@ import GameRoom from '../views/GameRoom.vue'
 import LoginPage from '../views/LoginPage.vue'
 import { auth } from '../../firebaseConfig.js'
 import { onAuthStateChanged } from 'firebase/auth'
+import MoleGame from '/views/MoleGame.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,11 +14,11 @@ const router = createRouter({
       path: '/',
       redirect: '/login',
     },
-    /* {
-      path: '/molegame'
+    {
+      path: '/molegame',
       name: 'molegame',
-      component: a,
-    }, */
+      component: MoleGame,
+    },
     {
       path: '/login',
       name: 'login',
