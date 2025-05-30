@@ -1,12 +1,43 @@
 <template>
   <div>
     <div class="grid">
-      <img class="rat" src="/bigrat.png" alt="" />
+      <div v-for="(hole, index) in holes"
+      :key="index"
+      class="hole"
+      @click="whack(index)">
+        <img
+          v-if="moleIndex === index" 
+          alt="Rat" 
+          class="rat" src="/bigrat.png"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+const score = ref('')
+
+
+function createRat() {
+  
+  ratIndex = Math.floor(Math.random() * 9 /*num of holes in row*/)
+}
+
+function whack(index) {
+  if (whackedIndex === ratIndex) {
+    score++
+    createRat()
+  }
+
+  /*if (index === this.moleIndex && this.gameRunning) {
+        this.score++;
+        this.moleIndex = null; // remove mole after hit
+      }*/
+}
+
 //auto-fit makes as many columns as fits
 //might needs to put bigrat.png into src/assets to make it usable in components?
 
