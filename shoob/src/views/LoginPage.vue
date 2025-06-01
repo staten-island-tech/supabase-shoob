@@ -1,9 +1,10 @@
 <template>
   <div class="register">
-    <h1>hasfhfdjshgkjdhsgkj</h1>
-
-    <button class="loginButtons" @click="selectLogin">Log in</button>
-    <button class="loginButtons" @click="selectSignup">Sign up</button>
+    <h1>:3</h1>
+    <nav>
+      <button class="loginButtons" @click="selectLogin">Log in</button>
+      <button class="loginButtons" @click="selectSignup">Sign up</button>
+    </nav>
 
     <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
       <input v-model="email" type="email" placeholder="Email" required />
@@ -68,7 +69,7 @@ async function handleSign() {
 }
 
 .loginButtons {
-  width: 100%;
+  width: 5 rem;
   font-size: 12px;
   text-align: center;
   margin-top: 2rem;
