@@ -20,7 +20,7 @@
 
 <script setup>
 import { ref, defineProps } from 'vue'
-import { registerUser, loginUser } from '../../controllers/userController'
+import { registerUser, loginUser } from '../stores/authStore'
 
 const email = ref('')
 const password = ref('')
