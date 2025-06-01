@@ -13,40 +13,49 @@ import {
 import { auth } from '../../firebaseConfig'
 import router from '../router'
 
-export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: null,
+    authReady: false,
+    error: null,
+    //all temp null or false
+  }),
 
-  onAuthStateChanged(auth, (firebaseUser) => {
-    user.value = firebaseUser
-  })
+  actions: {
+    async initAuth() {
+      // onAuthStateChanged is a listener that fires when the user's sign-in state changes.
+      // it also fires once when the listener is attached, providing the initial state.
+      onAuthStateChanged(auth, (user) => {
+        this.user = user // update the user state in the store based on Firebase's response
+        this.authReady = true // mark auth as ready after the initial check
+        console.log('Firebase Auth State Changed:', user ? user.email : 'No user')
+      })
+    },
 
-  return { user }
-})
+    async registerUser(email, password) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password) //automatically comes with uid, email, and things
+        //above is literally all the code we need
+        const user = userCredential.user
+        console.log('registered:', user)
+      } catch (error) {
+        console.error('register error:', error.message)
+      }
+    },
 
-async function registerUser(email, password) {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password) //automatically comes with uid, email, and things
-    //above is literally all the code we need
-    const user = userCredential.user
-    console.log('registered:', user)
-  } catch (error) {
-    console.error('register error:', error.message)
-  }
-}
+    async loginUser(email, password) {
+      try {
+        await setPersistence(auth, browserLocalPersistence)
+        const userCredential = await signInWithEmailAndPassword(auth, email, password)
+        const user = userCredential.user
+        console.log('logged in:', user.email)
+        router.push('/gameroom')
+      } catch (error) {
+        console.error('login error:', error.message)
+      }
+    },
 
-async function loginUser(email, password) {
-  try {
-    await setPersistence(auth, browserLocalPersistence)
-    const userCredential = await signInWithEmailAndPassword(auth, email, password)
-    const user = userCredential.user
-    console.log('logged in:', user.email)
-    router.push('/gameroom')
-  } catch (error) {
-    console.error('login error:', error.message)
-  }
-}
-
-/* function monitorAuthState() {
+    /* function monitorAuthState() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       console.log('user is signed in:', user.email)
@@ -56,14 +65,16 @@ async function loginUser(email, password) {
   })
 } */
 
-async function logoutUser() {
-  try {
-    await signOut(auth)
-    console.log('signed out')
-    router.push('/')
-  } catch (error) {
-    console.error('sign out error:', error.message)
-  }
-}
+    async logoutUser() {
+      try {
+        await signOut(auth)
+        console.log('signed out')
+        router.push('/')
+      } catch (error) {
+        console.error('sign out error:', error.message)
+      }
+    },
+  },
+})
 
-export { registerUser, loginUser, logoutUser }
+//export { registerUser, loginUser, logoutUser }

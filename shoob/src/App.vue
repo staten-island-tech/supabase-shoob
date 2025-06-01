@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { useAuthStore, logoutUser } from './stores/authStore'
+import { useAuthStore } from './stores/authStore'
 import { RouterLink, RouterView } from 'vue-router'
 
 /*IDEAS:
@@ -33,7 +33,7 @@ const authStore = useAuthStore()
 const user = authStore.user
 
 async function logout() {
-  await logoutUser()
+  await authStore.logoutUser()
 }
 </script>
 

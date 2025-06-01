@@ -19,18 +19,22 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue'
-import { registerUser, loginUser } from '../stores/authStore'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/authStore'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const error = ref('')
-
+const error = ref('') //need to find a way to display error messages
 const signInOption = ref('in')
 
 function selectLogin() {
   signInOption.value = 'in'
 }
+
 function selectSignup() {
   signInOption.value = 'up'
 }
@@ -38,10 +42,10 @@ function selectSignup() {
 async function handleSign() {
   try {
     if (signInOption.value === 'up') {
-      await registerUser(email.value, password.value)
+      await authStore.registerUser(email.value, password.value)
       console.log('sign-up successsful')
     } else {
-      await loginUser(email.value, password.value)
+      await authStore.loginUser(email.value, password.value)
     }
     //check out what the below does
     //email.value = ''
