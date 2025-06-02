@@ -1,6 +1,8 @@
 <template>
   <div>
     <h2>Rooms</h2>
+    <RoomInfo :rooms="rooms"></RoomInfo>
+
     <ul>
       <li v-for="(room, id) in rooms" :key="id">
         <button @click="selectRoom(id)">{{ id }}</button>
@@ -21,6 +23,8 @@
 </template>
 
 <script setup>
+import RoomInfo from './RoomInfo.vue'
+
 import { ref, onMounted } from 'vue'
 import { db } from '/firebaseConfig.js'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
