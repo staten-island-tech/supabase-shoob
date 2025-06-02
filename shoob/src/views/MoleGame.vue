@@ -6,6 +6,7 @@
         @click="
           gameStatus = 1;
           score = 0;
+          abilityPoints = 0;
           createRat();
         "
       >
@@ -24,11 +25,17 @@
         }"
       >
         <div v-for="(hole, index) in holes" :key="index" class="hole" @click="whack(index)">
-          <img v-if="ratIndex === index" alt="Rat" class="rat" src="/bigrat.png" />
+          <img 
+            v-if="ratIndex === index" 
+            alt="Rat" 
+            class="rat" 
+            draggable="false" 
+            src="/bigrat.png" />
           <img
             v-if="specialRatIndex === index && random == 1"
             alt="Special Rat"
             class="rat"
+            draggable="false"
             src="/bigratBlue.png"
           />
         </div>
@@ -48,10 +55,10 @@
 </template>
 
 <script setup>
-
 /*  NOTES :
 - Hide the "header" in app if the game is playing to recenter the page (invisible element)
 - Sabotage that creates random string of words to be typed?
+- Timer that gets rid of rats
 */
 
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
@@ -67,6 +74,7 @@ const holes = ref()
 const ratIndex = ref()
 const specialRatIndex = ref()
 const random = ref(0)
+const randomTime = ref(0)
 const newRatIndexes = ref([0, 0])
 const userAnswer = ref('') //v-model will create a string so it should be parsed
 const correctAnswer = ref()
@@ -81,6 +89,14 @@ onUnmounted(() => {
   window.removeEventListener('keydown', keybind)
 })
 
+function glow(hole) {
+  hole.style.backgroundColor = 'red'
+}
+
+function unglow(hole) {
+  hole.style.backgroundColor = 'background-color: #123412'
+}
+
 function setGrids(value) {
   gridDim.value = value
   gridSize.value = value ** 2
@@ -90,10 +106,15 @@ function setGrids(value) {
 }
 
 function createRat() {
-  generateRandomIndexes()
-  ratIndex.value = newRatIndexes.value[0]
-  specialRatIndex.value = newRatIndexes.value[1]
-  random.value = Math.floor(Math.random() * 12)         //special rat spawn rate
+  ratIndex.value = null
+  specialRatIndex.value = null
+  generateRandomTime()
+  setTimeout(() => {
+    generateRandomIndexes()
+    ratIndex.value = newRatIndexes.value[0]
+    specialRatIndex.value = newRatIndexes.value[1]
+    random.value = Math.floor(Math.random() * 12) //special rat spawn rate
+  }, randomTime.value);
 }
 
 function generateRandomIndexes() {
@@ -108,6 +129,10 @@ function generateRandomIndexes() {
   console.log(newRatIndexes.value)
 }
 
+function generateRandomTime() {
+  randomTime.value = Math.floor(Math.random() * 1200) + 300
+}
+
 function whack(index) {
   if (gameStatus.value == 1) {
     if (index === ratIndex.value) {
@@ -115,17 +140,20 @@ function whack(index) {
       abilityPoints.value++
       createRat()
     }
-    if (index === specialRatIndex.value) {
+    else if (index === specialRatIndex.value) {
       score.value++
       abilityPoints.value += 5
       createRat()
+    }
+    else {
+      score.value--
     }
   }
 }
 
 function createMathProblem() {
   if (abilityPoints.value > 20) {
-    abilityPoints.value-=20
+    abilityPoints.value -= 20
     paused.value = 1
     userAnswer.value = ''
     const v1 = Math.floor(Math.random() * 29)
@@ -156,7 +184,9 @@ setGrids(4)
 </script>
 
 <style scoped>
+
 .game {
+
 }
 
 .rat {
@@ -182,5 +212,15 @@ setGrids(4)
 .mathProblem {
   display: flex;
   flex-direction: row;
+  font-size: xx-large;
 }
+
+.mathInput {
+  font-size: x-large;
+}
+
+.hole:hover {
+  background-color: rgb(213, 69, 69);
+}
+
 </style>
