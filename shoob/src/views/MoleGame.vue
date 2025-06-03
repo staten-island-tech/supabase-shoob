@@ -12,7 +12,7 @@
       >
         Start
       </button>
-      <button @click="gameStatus = 0">End</button>
+      <button @click="endGame" >End</button>
       <button @click="setGrids(4)">4x4</button>
       <button @click="setGrids(5)">5x5</button>
       <button @click="setGrids(6)">6x6</button>
@@ -38,6 +38,20 @@
             draggable="false"
             src="/bigratBlue.png"
           />
+          <img
+            v-if="(prevRatIndex == index || (prevSpecialRatIndex == index)) && showBonk == 1"
+            alt="bonk effect"
+            class="rat"
+            draggable="false"
+            src="/bonk.avif"
+          />  
+          <img
+            v-if="(prevRatIndex == index || (prevSpecialRatIndex == index)) && showBonk == 0"
+            alt="poof effect"
+            class="rat"
+            draggable="false"
+            src="/poof.png"
+          />  
         </div>
       </div>
     </div>
@@ -67,19 +81,27 @@ import { useRoute } from 'vue-router'
 const gameStatus = ref(0)
 const paused = ref(0)
 const score = ref(0)
+const finalScore = ref(0)
 const abilityPoints = ref(0)
 const gridDim = ref(0)
 const gridSize = ref(0)
 const holes = ref()
 const ratIndex = ref()
 const specialRatIndex = ref()
+const prevRatIndex = ref()
+const prevSpecialRatIndex = ref()
 const random = ref(0)
 const randomTime = ref(0)
 const newRatIndexes = ref([0, 0])
+const whacked = ref(0)
+const showBonk = ref()
 const userAnswer = ref('') //v-model will create a string so it should be parsed
 const correctAnswer = ref()
 const mathProblem = ref('')
 const inputBox = ref(null)
+
+let ratTimeout = null
+let removeTimeout = null
 
 onMounted(() => {
   window.addEventListener('keydown', keybind)
@@ -88,14 +110,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', keybind)
 })
-
-function glow(hole) {
-  hole.style.backgroundColor = 'red'
-}
-
-function unglow(hole) {
-  hole.style.backgroundColor = 'background-color: #123412'
-}
 
 function setGrids(value) {
   gridDim.value = value
@@ -106,22 +120,45 @@ function setGrids(value) {
 }
 
 function createRat() {
+  clearTimeout(ratTimeout)
+  clearTimeout(removeTimeout)
   ratIndex.value = null
   specialRatIndex.value = null
+  whacked.value = 0
+
   generateRandomTime()
-  setTimeout(() => {
+    ratTimeout = setTimeout(() => {
+    showBonk.value = null
     generateRandomIndexes()
     ratIndex.value = newRatIndexes.value[0]
     specialRatIndex.value = newRatIndexes.value[1]
-    random.value = Math.floor(Math.random() * 12) //special rat spawn rate
-  }, randomTime.value);
+    random.value = Math.floor(Math.random() * 12)
+
+    removeTimeout = setTimeout(() => {
+      if (whacked.value === 0 && gameStatus.value == 1) {
+        score.value--
+        showBonk.value = 0
+      }
+      prevRatIndex.value = ratIndex.value
+      if (random.value == 1) {
+        prevSpecialRatIndex.value = specialRatIndex.value
+      }
+      else {
+        prevSpecialRatIndex.value = null
+      }
+      ratIndex.value = null
+      specialRatIndex.value = null
+      createRat()
+    }, 1200)
+
+  }, randomTime.value)
 }
 
 function generateRandomIndexes() {
   const indexes = new Set() //using a set prevents duplicates so we don't need to filter out two different unique indexes
   while (indexes.size < 2) {
     const tryIndex = Math.floor(Math.random() * gridSize.value)
-    if (tryIndex !== ratIndex.value && tryIndex !== specialRatIndex.value) {
+    if (tryIndex !== prevRatIndex.value && tryIndex !== prevSpecialRatIndex.value) {
       indexes.add(tryIndex)
     }
   }
@@ -130,7 +167,7 @@ function generateRandomIndexes() {
 }
 
 function generateRandomTime() {
-  randomTime.value = Math.floor(Math.random() * 1200) + 300
+  randomTime.value = Math.floor(Math.random() * 300) + 200
 }
 
 function whack(index) {
@@ -138,11 +175,19 @@ function whack(index) {
     if (index === ratIndex.value) {
       score.value++
       abilityPoints.value++
+      whacked.value = 1
+      showBonk.value = 1
+      prevRatIndex.value = ratIndex.value
+      prevSpecialRatIndex.value = null
       createRat()
     }
     else if (index === specialRatIndex.value) {
       score.value++
       abilityPoints.value += 5
+      whacked.value = 1
+      showBonk.value = 1
+      prevRatIndex.value = null
+      prevSpecialRatIndex.value = specialRatIndex.value
       createRat()
     }
     else {
@@ -165,6 +210,15 @@ function createMathProblem() {
       inputBox.value?.focus()
     })
   }
+}
+
+function endGame() {
+  gameStatus.value = 0
+  finalScore.value = score.value
+  clearTimeout(ratTimeout)
+  clearTimeout(removeTimeout)
+  ratIndex.value = null
+  specialRatIndex.value = null
 }
 
 watch(userAnswer, (value) => {
@@ -207,6 +261,7 @@ setGrids(4)
   background-color: #123412;
   width: 100px;
   height: 100px;
+  overflow: hidden;
 }
 
 .mathProblem {
