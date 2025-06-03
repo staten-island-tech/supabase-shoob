@@ -17,6 +17,7 @@
       <button @click="setGrids(5)">5x5</button>
       <button @click="setGrids(6)">6x6</button>
       <button @click="((paused = 1), createMathProblem())">Math Problem</button>
+      <button @click="abilityPoints+=20">test ability points button</button>
       <div
         class="grid"
         :style="{
@@ -73,6 +74,7 @@
 - Hide the "header" in app if the game is playing to recenter the page (invisible element)
 - Sabotage that creates random string of words to be typed?
 - Timer that gets rid of rats
+- Freeze ability points gain button?
 */
 
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
@@ -97,6 +99,7 @@ const whacked = ref(0)
 const showBonk = ref()
 const userAnswer = ref('') //v-model will create a string so it should be parsed
 const correctAnswer = ref()
+const doublePoints = ref(0)
 const mathProblem = ref('')
 const inputBox = ref(null)
 
@@ -126,13 +129,15 @@ function createRat() {
   specialRatIndex.value = null
   whacked.value = 0
 
-  generateRandomTime()
+  generateRandomTime(600, 200)
     ratTimeout = setTimeout(() => {
     showBonk.value = null
     generateRandomIndexes()
     ratIndex.value = newRatIndexes.value[0]
     specialRatIndex.value = newRatIndexes.value[1]
     random.value = Math.floor(Math.random() * 12)
+
+    generateRandomTime(600,600)
 
     removeTimeout = setTimeout(() => {
       if (whacked.value === 0 && gameStatus.value == 1) {
@@ -149,7 +154,7 @@ function createRat() {
       ratIndex.value = null
       specialRatIndex.value = null
       createRat()
-    }, 1200)
+    }, randomTime.value)
 
   }, randomTime.value)
 }
@@ -166,14 +171,20 @@ function generateRandomIndexes() {
   console.log(newRatIndexes.value)
 }
 
-function generateRandomTime() {
-  randomTime.value = Math.floor(Math.random() * 300) + 200
+function generateRandomTime(baseTime, min) {
+  randomTime.value = Math.floor(Math.random() * baseTime
+) + min
 }
 
 function whack(index) {
   if (gameStatus.value == 1) {
     if (index === ratIndex.value) {
-      score.value++
+      if (doublePoints.value == 0) {
+        score.value++
+      }
+      else {
+        score.value+=(doublePoints.value + 1)
+      }
       abilityPoints.value++
       whacked.value = 1
       showBonk.value = 1
@@ -182,7 +193,12 @@ function whack(index) {
       createRat()
     }
     else if (index === specialRatIndex.value) {
-      score.value++
+      if (doublePoints.value == 0) {
+        score.value++
+      }
+      else {
+        score.value+=doublePoints.value
+      }
       abilityPoints.value += 5
       whacked.value = 1
       showBonk.value = 1
@@ -197,7 +213,7 @@ function whack(index) {
 }
 
 function createMathProblem() {
-  if (abilityPoints.value > 20) {
+  if (abilityPoints.value >= 20) {
     abilityPoints.value -= 20
     paused.value = 1
     userAnswer.value = ''
@@ -209,6 +225,16 @@ function createMathProblem() {
       //waits for DOM to load, "selects" textbox for user
       inputBox.value?.focus()
     })
+  }
+}
+
+function doublePointCount() {
+  if (abilityPoints.value >= 10) {
+    abilityPoints.value -= 10
+    doublePoints.value++
+    setTimeout(() => {
+      doublePoints.value = 0
+    }, 8000);
   }
 }
 
@@ -232,16 +258,16 @@ function keybind(input) {
     input.preventDefault()
     createMathProblem()
   }
+  if (input.key == 'd') {
+    input.preventDefault()
+    doublePointCount()
+  }
 }
 
 setGrids(4)
 </script>
 
 <style scoped>
-
-.game {
-
-}
 
 .rat {
   width: 100%;
