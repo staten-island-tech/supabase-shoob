@@ -4,20 +4,20 @@
       <p>score: {{ score }} ability points: {{ abilityPoints }}</p>
       <button
         @click="
-          gameStatus = 1;
-          score = 0;
-          abilityPoints = 0;
-          createRat();
+          gameStatus = 1
+          score = 0
+          abilityPoints = 0
+          createRat()
         "
       >
         Start
       </button>
-      <button @click="endGame" >End</button>
+      <button @click="endGame">End</button>
       <button @click="setGrids(4)">4x4</button>
       <button @click="setGrids(5)">5x5</button>
       <button @click="setGrids(6)">6x6</button>
       <button @click="((paused = 1), createMathProblem())">Math Problem</button>
-      <button @click="abilityPoints+=20">test ability points button</button>
+      <button @click="abilityPoints += 20">test ability points button</button>
       <div
         class="grid"
         :style="{
@@ -26,33 +26,28 @@
         }"
       >
         <div v-for="(hole, index) in holes" :key="index" class="hole" @click="whack(index)">
-          <img 
-            v-if="ratIndex === index" 
-            alt="Rat" 
-            class="rat" 
-            draggable="false" 
-            src="/bigrat.png" />
+          <img v-if="ratIndex === index" alt="Rat" class="rat" draggable="false" src="/enemy.png" />
           <img
             v-if="specialRatIndex === index && random == 1"
             alt="Special Rat"
             class="rat"
             draggable="false"
-            src="/bigratBlue.png"
+            src="/enemyBlue.png"
           />
           <img
-            v-if="(prevRatIndex == index || (prevSpecialRatIndex == index)) && showBonk == 1"
+            v-if="(prevRatIndex == index || prevSpecialRatIndex == index) && showBonk == 1"
             alt="bonk effect"
             class="rat"
             draggable="false"
             src="/bonk.avif"
-          />  
+          />
           <img
-            v-if="(prevRatIndex == index || (prevSpecialRatIndex == index)) && showBonk == 0"
+            v-if="(prevRatIndex == index || prevSpecialRatIndex == index) && showBonk == 0"
             alt="poof effect"
             class="rat"
             draggable="false"
             src="/poof.png"
-          />  
+          />
         </div>
       </div>
     </div>
@@ -130,14 +125,14 @@ function createRat() {
   whacked.value = 0
 
   generateRandomTime(600, 200)
-    ratTimeout = setTimeout(() => {
+  ratTimeout = setTimeout(() => {
     showBonk.value = null
     generateRandomIndexes()
     ratIndex.value = newRatIndexes.value[0]
     specialRatIndex.value = newRatIndexes.value[1]
     random.value = Math.floor(Math.random() * 12)
 
-    generateRandomTime(600,600)
+    generateRandomTime(600, 600)
 
     removeTimeout = setTimeout(() => {
       if (whacked.value === 0 && gameStatus.value == 1) {
@@ -147,15 +142,13 @@ function createRat() {
       prevRatIndex.value = ratIndex.value
       if (random.value == 1) {
         prevSpecialRatIndex.value = specialRatIndex.value
-      }
-      else {
+      } else {
         prevSpecialRatIndex.value = null
       }
       ratIndex.value = null
       specialRatIndex.value = null
       createRat()
     }, randomTime.value)
-
   }, randomTime.value)
 }
 
@@ -172,8 +165,7 @@ function generateRandomIndexes() {
 }
 
 function generateRandomTime(baseTime, min) {
-  randomTime.value = Math.floor(Math.random() * baseTime
-) + min
+  randomTime.value = Math.floor(Math.random() * baseTime) + min
 }
 
 function whack(index) {
@@ -181,9 +173,8 @@ function whack(index) {
     if (index === ratIndex.value) {
       if (doublePoints.value == 0) {
         score.value++
-      }
-      else {
-        score.value+=(doublePoints.value + 1)
+      } else {
+        score.value += doublePoints.value + 1
       }
       abilityPoints.value++
       whacked.value = 1
@@ -191,13 +182,11 @@ function whack(index) {
       prevRatIndex.value = ratIndex.value
       prevSpecialRatIndex.value = null
       createRat()
-    }
-    else if (index === specialRatIndex.value) {
+    } else if (index === specialRatIndex.value) {
       if (doublePoints.value == 0) {
         score.value++
-      }
-      else {
-        score.value+=doublePoints.value
+      } else {
+        score.value += doublePoints.value
       }
       abilityPoints.value += 5
       whacked.value = 1
@@ -205,8 +194,7 @@ function whack(index) {
       prevRatIndex.value = null
       prevSpecialRatIndex.value = specialRatIndex.value
       createRat()
-    }
-    else {
+    } else {
       score.value--
     }
   }
@@ -234,7 +222,7 @@ function doublePointCount() {
     doublePoints.value++
     setTimeout(() => {
       doublePoints.value = 0
-    }, 8000);
+    }, 8000)
   }
 }
 
@@ -268,7 +256,6 @@ setGrids(4)
 </script>
 
 <style scoped>
-
 .rat {
   width: 100%;
   height: 100%;
@@ -303,5 +290,4 @@ setGrids(4)
 .hole:hover {
   background-color: rgb(213, 69, 69);
 }
-
 </style>
