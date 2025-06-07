@@ -16,6 +16,8 @@
       <input v-model="password" type="password" placeholder="Password" required />
       <button type="submit">Sign In</button>
     </form>
+
+    <p v-if="error" class="error-message">{{ error }}</p>
   </div>
 </template>
 
@@ -34,13 +36,16 @@ const signInOption = ref('in')
 
 function selectLogin() {
   signInOption.value = 'in'
+  error.value = ''
 }
 
 function selectSignup() {
   signInOption.value = 'up'
+  error.value = ''
 }
 
 async function handleSign() {
+  error.value = ''
   try {
     if (signInOption.value === 'up') {
       await authStore.registerUser(email.value, password.value)
@@ -52,6 +57,7 @@ async function handleSign() {
     //email.value = ''
     //password.value = ''
     //window.location.href = '/lobby'
+    router.push('/gameroom')
   } catch (err) {
     console.log('error')
     error.value = err.message
@@ -69,7 +75,7 @@ async function handleSign() {
 }
 
 .loginButtons {
-  width: 5 rem;
+  width: 5rem;
   font-size: 12px;
   text-align: center;
   margin-top: 2rem;

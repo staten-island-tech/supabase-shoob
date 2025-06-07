@@ -1,7 +1,6 @@
 //pinia file
 
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -17,7 +16,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     authReady: false,
-    error: null,
+    storeError: null,
     //all temp null or false
   }),
 
@@ -33,6 +32,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async registerUser(email, password) {
+      this.storeError = null
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password) //automatically comes with uid, email, and things
         //above is literally all the code we need
@@ -40,18 +40,22 @@ export const useAuthStore = defineStore('auth', {
         console.log('registered:', user)
       } catch (error) {
         console.error('register error:', error.message)
+        this.storeError = error.message
+        throw error
       }
     },
 
     async loginUser(email, password) {
       try {
+        this.storeError = null
         await setPersistence(auth, browserLocalPersistence)
         const userCredential = await signInWithEmailAndPassword(auth, email, password)
         const user = userCredential.user
         console.log('logged in:', user.email)
-        router.push('/gameroom')
       } catch (error) {
         console.error('login error:', error.message)
+        this.storeError = error.message
+        throw error
       }
     },
 
@@ -66,12 +70,15 @@ export const useAuthStore = defineStore('auth', {
 } */
 
     async logoutUser() {
+      this.storeError = null
       try {
         await signOut(auth)
         console.log('signed out')
         router.push('/')
       } catch (error) {
         console.error('sign out error:', error.message)
+        this.storeError = error.message
+        throw error
       }
     },
   },
