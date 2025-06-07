@@ -1,9 +1,10 @@
 <template>
   <div class="register">
-    <h1>hasfhfdjshgkjdhsgkj</h1>
-
-    <button class="loginButtons" @click="selectLogin">Log in</button>
-    <button class="loginButtons" @click="selectSignup">Sign up</button>
+    <h1>:3</h1>
+    <nav>
+      <button class="loginButtons" @click="selectLogin">Log in</button>
+      <button class="loginButtons" @click="selectSignup">Sign up</button>
+    </nav>
 
     <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
       <input v-model="email" type="email" placeholder="Email" required />
@@ -15,38 +16,48 @@
       <input v-model="password" type="password" placeholder="Password" required />
       <button type="submit">Sign In</button>
     </form>
+
+    <p v-if="error" class="error-message">{{ error }}</p>
   </div>
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue'
-import { registerUser, loginUser } from '../../controllers/userController'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/authStore'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const error = ref('')
-
+const error = ref('') //need to find a way to display error messages
 const signInOption = ref('in')
 
 function selectLogin() {
   signInOption.value = 'in'
+  error.value = ''
 }
+
 function selectSignup() {
   signInOption.value = 'up'
+  error.value = ''
 }
 
 async function handleSign() {
+  error.value = ''
   try {
     if (signInOption.value === 'up') {
-      await registerUser(email.value, password.value)
+      await authStore.registerUser(email.value, password.value)
       console.log('sign-up successsful')
     } else {
-      await loginUser(email.value, password.value)
+      await authStore.loginUser(email.value, password.value)
     }
     //check out what the below does
     //email.value = ''
     //password.value = ''
     //window.location.href = '/lobby'
+    router.push('/gameroom')
   } catch (err) {
     console.log('error')
     error.value = err.message
@@ -64,7 +75,7 @@ async function handleSign() {
 }
 
 .loginButtons {
-  width: 100%;
+  width: 5rem;
   font-size: 12px;
   text-align: center;
   margin-top: 2rem;

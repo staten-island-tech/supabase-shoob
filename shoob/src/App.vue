@@ -16,9 +16,7 @@
 
 <script setup>
 import { useAuthStore } from './stores/authStore'
-import { logoutUser } from './../controllers/userController'
 import { RouterLink, RouterView } from 'vue-router'
-import PlayerProfile from './views/PlayerProfile.vue'
 
 /*IDEAS:
 Whack a mole
@@ -29,11 +27,13 @@ special mole you have to prioritize or you explode
 presets: whales + whalen? whalen + henriqueses
 normal mole and special mole
 */
+
+//this is from pinia
 const authStore = useAuthStore()
 const user = authStore.user
 
 async function logout() {
-  await logoutUser()
+  await authStore.logoutUser()
 }
 </script>
 
