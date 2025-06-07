@@ -1,21 +1,22 @@
 <template>
   <div class="register">
-    <h1>:3</h1>
     <nav>
       <button class="loginButtons" @click="selectLogin">Log in</button>
       <button class="loginButtons" @click="selectSignup">Sign up</button>
     </nav>
 
-    <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="password" type="password" placeholder="Password" required />
-      <button type="submit">Register</button>
-    </form>
-    <form v-if="signInOption === 'in'" @submit.prevent="handleSign">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="password" type="password" placeholder="Password" required />
-      <button type="submit">Sign In</button>
-    </form>
+    <div class="login">
+      <form v-if="signInOption === 'up'" @submit.prevent="handleSign">
+        <input v-model="email" type="email" placeholder="Email" required />
+        <input v-model="password" type="password" placeholder="Password" required />
+        <button type="submit">Register</button>
+      </form>
+      <form v-if="signInOption === 'in'" @submit.prevent="handleSign">
+        <input v-model="email" type="email" placeholder="Email" required />
+        <input v-model="password" type="password" placeholder="Password" required />
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
 
     <p v-if="error" class="error-message">{{ error }}</p>
   </div>
@@ -66,28 +67,37 @@ async function handleSign() {
 </script>
 
 <style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 5rem;
 }
 
 .loginButtons {
+  margin: 1rem;
   width: 5rem;
   font-size: 12px;
   text-align: center;
   margin-top: 2rem;
   color: var(--color-text);
   background-color: pink;
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-  border: 0;
 }
 
 .register {
   width: 30rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 20px;
 }
 </style>
