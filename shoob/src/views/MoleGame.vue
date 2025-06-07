@@ -75,15 +75,21 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 
+//gameside variables
 const gameStatus = ref(0)
-const paused = ref(0)
-const score = ref(0)
-const finalScore = ref(0)
-const abilityPoints = ref(0)
 const gridDim = ref(0)
 const gridSize = ref(0)
+
+//userside variables
+const paused = ref(0)
+const score = ref(0)
+const finalScore = ref(0) //useless variable
+const abilityPoints = ref(0)
+
+//visual
 const holes = ref()
 const ratIndex = ref()
+
 const specialRatIndex = ref()
 const prevRatIndex = ref()
 const prevSpecialRatIndex = ref()
