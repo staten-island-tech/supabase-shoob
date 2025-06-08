@@ -73,8 +73,7 @@ body {
   align-items: center;
   min-height: 100vh;
 }
-
-.login {
+`` .login {
   display: flex;
   justify-content: center;
   align-items: center;

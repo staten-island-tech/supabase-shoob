@@ -55,6 +55,7 @@ async function createRoom(id) {
   const roomData = {
     players: {},
     gameState: 'waiting',
+    hostId: user.uid,
   }
   await set(dbRef(db, `rooms/${id}`), roomData)
   rooms.value[id] = roomData
@@ -86,18 +87,29 @@ async function joinRoom(id) {
     }
   }
 
-  const playerData = {
+  const updates = {}
+  updates[`rooms/${id}/players/${user.uid}`] = {
     displayName: user.displayName || user.email || 'Player',
+    score: 0,
+    abilityPoints: 0,
   }
-  await update(dbRef(db, `rooms/${id}/players/${user.uid}`), playerData)
+  if (!currentHostId) {
+    updates[`rooms/${id}/hostId`] = user.uid
+  }
+
+  await update(dbRef(db, '/'), updates)
 
   if (!rooms.value[id]) {
-    rooms.value[id] = { players: {}, gameState: 'waiting' }
+    rooms.value[id] = { players: {}, gameState: 'waiting', hostId: currentHostId || user.uid }
   }
   if (!rooms.value[id].players) {
     rooms.value[id].players = {}
   }
-  rooms.value[id].players[user.uid] = playerData
+  rooms.value[id].players[user.uid] = {
+    displayName: user.displayName || user.email || 'Player',
+    score: 0,
+    abilityPoints: 0,
+  }
 }
 
 async function leaveRoom() {
