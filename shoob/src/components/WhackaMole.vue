@@ -49,7 +49,7 @@ const currentVisibleMoles = ref({})
 let moleGenerationInterval = null
 
 function startMoleGeneration() {
-  if (!isHost.value || gameStatus.value !== 1) return // Only host starts and only if game is playing
+  if (!isHost.value || gameStatus.value !== 1) return // only host starts and only if game is playing
 
   // Clear any existing interval to prevent duplicates
   if (moleGenerationInterval) {
