@@ -1,38 +1,4 @@
-<template>
-  <div
-    class="grid"
-    :style="{
-      gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
-      gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
-    }"
-  >
-    <div v-for="n in (gameState.gridDim || 4) ** 2" :key="n - 1" class="hole" @click="whack(n - 1)">
-      <template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
-        <img
-          v-if="mole.index === n - 1 && mole.whackedBy === null && mole.type === 'normal'"
-          alt="Rat"
-          class="rat"
-          draggable="false"
-          src="/enemy.png"
-        />
-        <img
-          v-if="mole.index === n - 1 && mole.whackedBy === null && mole.type === 'special'"
-          alt="Special Rat"
-          class="rat"
-          draggable="false"
-          src="/enemyBlue.png"
-        />
-        <img
-          v-if="mole.index === n - 1 && mole.whackedBy !== null && mole.whackedAt && !mole.removed"
-          alt="bonk effect"
-          class="rat"
-          draggable="false"
-          :src="mole.whackedBy === currentUserId ? '/bonk.avif' : '/poof.png'"
-        />
-      </template>
-    </div>
-  </div>
-</template>
+<template></template>
 
 <script setup>
 import { ref as dbRef, push, serverTimestamp, remove, update } from 'firebase/database'
@@ -41,15 +7,16 @@ import { computed } from 'vue'
 //game and mole ref
 const gameRef = computed(() => dbRef(db, `rooms/${roomId.value}`))
 const molesRef = computed(() => dbRef(db, `rooms/${roomId.value}/moles`))
-
 const currentUserId = computed(() => auth.currentUser?.uid)
 const isHost = computed(() => currentUserId.value === gameState.value.hostId)
+const gameState = ref({})
 
 const currentVisibleMoles = ref({})
 let moleGenerationInterval = null
 
 function startMoleGeneration() {
-  if (!isHost.value || gameStatus.value !== 1) return // only host starts and only if game is playing
+  // only host starts and only if game is playing
+  if (!isHost.value || gameStatus.value !== 1) return
 
   // Clear any existing interval to prevent duplicates
   if (moleGenerationInterval) {
@@ -71,26 +38,22 @@ function stopMoleGeneration() {
 async function generateAndPublishMole() {
   if (!roomId.value || !isHost.value) return
 
-  const currentGridSize = (gameState.value.gridDim || 4) ** 2 // Use current gridDim from gameState
-  const random = Math.floor(Math.random() * 12)
-  const moleType = random === 1 ? 'special' : 'normal'
+  const currentGridSize = (gameState.value.gridDim || 4) ** 2 //** 2 is basically exponent 2
 
-  // Generate a random index for the mole
-  let moleIndex
-  // Basic logic to avoid immediate duplicate indices. For more complex logic,
-  // you might need to fetch existing moles or keep track of recent ones.
-  // For now, let's just pick a random index.
-  moleIndex = Math.floor(Math.random() * currentGridSize)
+  const random = Math.floor(Math.random() * 12)
+  // if randomly generated number = 1, its special
+  const moleType = random === 1 ? 'special' : 'normal'
+  let moleIndex = Math.floor(Math.random() * currentGridSize)
 
   const newMoleData = {
     index: moleIndex,
     type: moleType,
-    createdAt: serverTimestamp(), // Firebase server timestamp
-    whackedBy: null, // Initially not whacked
+    createdAt: serverTimestamp(), // idk if this is needed
+    whackedBy: null, // initially not whacked
   }
 
   try {
-    // `push()` generates a unique ID for the mole
+    //push generates a unique ID for the mole
     await push(molesRef.value, newMoleData)
     console.log(`Host generated new ${moleType} mole at index ${moleIndex}`)
   } catch (error) {
@@ -98,21 +61,7 @@ async function generateAndPublishMole() {
   }
 }
 
-// In your `updateGameState` function for 'playing' state:
-async function updateGameState(status) {
-  // ... existing logic ...
-  await update(dbRef(db, `rooms/${roomId.value}/gameState`), status)
-
-  if (status === 'playing' && isHost.value) {
-    startMoleGeneration()
-  } else if (status === 'ended' && isHost.value) {
-    stopMoleGeneration()
-    // Also clear all moles from the database when game ends
-    await remove(molesRef.value)
-  }
-}
-
-// Listen for game state changes to start/stop mole generation
+//
 watch(
   () => gameState.value.gameState,
   (newStatus) => {
@@ -172,7 +121,6 @@ async function whack(clickedIndex) {
 }
 
 onMounted(() => {
-  // ... existing listeners ...
   if (roomId.value) {
     onValue(molesRef.value, (snapshot) => {
       const molesData = snapshot.val()

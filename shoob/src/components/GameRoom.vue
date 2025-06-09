@@ -260,6 +260,15 @@ async function updateGameState(status) {
   try {
     await update(dbRef(db, `rooms/${roomId.value}`), { gameState: status })
     console.log(`Game state updated to: ${status}`)
+    await update(dbRef(db, `rooms/${roomId.value}/gameState`), status)
+
+    if (status === 'playing' && isHost.value) {
+      startMoleGeneration()
+    } else if (status === 'ended' && isHost.value) {
+      stopMoleGeneration()
+      // Also clear all moles from the database when game ends
+      await remove(molesRef.value)
+    }
   } catch (error) {
     console.error('Error updating game state:', error)
   }
