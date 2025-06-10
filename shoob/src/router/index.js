@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import GameLobby from '../views/GameLobby.vue'
+
 import GameRoom from '../views/GameRoom.vue'
 import LoginPage from '../views/LoginPage.vue'
 import PlayerProfile from '../views/PlayerProfile.vue'
@@ -11,19 +11,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/lobby',
+      redirect: '/gameroom',
     },
     {
       path: '/login',
       name: 'login',
       component: LoginPage,
-    },
-    {
-      // to see all available rooms
-      path: '/lobby',
-      name: 'lobby',
-      component: GameLobby, // Using HomeView as GameLobby
-      meta: { requiresAuth: true },
     },
     {
       //for when someone joins a room, figure out how to attach a unique id to it? or just consolidate it with lobby? or just make this the actual room when the game is running

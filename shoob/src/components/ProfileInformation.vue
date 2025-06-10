@@ -1,8 +1,8 @@
 <template>
   <div class="profile-card">
-    <img v-if="userData.photoURL" :src="userData.photoURL" alt="User Photo" class="avatar" />
-    <h2>{{ userData.displayName || 'Anonymous User' }}</h2>
-    <p>{{ userData.email || 'No email provided' }}</p>
+    <!-- <img v-if="userData.photoURL" :src="userData.photoURL" alt="User Photo" class="avatar" /> -->
+    <!-- <h2>{{ userData.displayName || 'Anonymous User' }}</h2>
+    <p>{{ userData.email || 'No email provided' }}</p> -->
   </div>
 </template>
 
