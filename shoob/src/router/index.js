@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import GameRoom from '../views/GameRoom.vue'
+import GameView from '../views/GameView.vue'
+import GameRoom from '../views/LobbyView.vue'
 import LoginPage from '../views/LoginPage.vue'
 import PlayerProfile from '../views/PlayerProfile.vue'
 import { auth } from '../../firebaseConfig.js'
@@ -30,6 +31,12 @@ const router = createRouter({
       name: 'profile',
       component: PlayerProfile,
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/game/:roomId',
+      name: 'game',
+      component: GameView,
+      props: true,
     },
   ],
 })

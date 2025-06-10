@@ -1,5 +1,5 @@
 <template>
-  <div class="stuff">
+  <div class="app">
     <header>
       <div class="wrapper">
         <nav>
