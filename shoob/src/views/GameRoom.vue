@@ -7,8 +7,4 @@ import GameRoom from '../components/GameRoom.vue'
 //ok this file is needed
 </script>
 
-<style scoped>
-/* * {
-  font-family: 'Impact';
-} */
-</style>
+<style scoped></style>
