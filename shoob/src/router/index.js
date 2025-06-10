@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../views/HomePage.vue'
-import HomeView from '../views/GameLobby.vue'
+import GameLobby from '../views/GameLobby.vue'
 import GameRoom from '../views/GameRoom.vue'
 import LoginPage from '../views/LoginPage.vue'
 import PlayerProfile from '../views/PlayerProfile.vue'
@@ -23,7 +22,7 @@ const router = createRouter({
       // to see all available rooms
       path: '/lobby',
       name: 'lobby',
-      component: HomeView, // Using HomeView as GameLobby
+      component: GameLobby, // Using HomeView as GameLobby
       meta: { requiresAuth: true },
     },
     {
