@@ -39,11 +39,13 @@
 <script setup>
 import RoomInfo from './RoomInfo.vue'
 
+import { useRouter } from 'vue-router'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { db } from '/firebaseConfig.js'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { ref as dbRef, set, onValue, update, remove, get } from 'firebase/database'
 
+const router = useRouter()
 const auth = getAuth()
 const roomId = ref('')
 const newRoomId = ref('')
@@ -223,6 +225,17 @@ function listenForGameState() {
     onValue(dbRef(db, `rooms/${roomId.value}`), (snapshot) => {
       if (snapshot.exists()) {
         gameState.value = snapshot.val()
+        if (gameState.value.gameState === 'playing' && router.currentRoute.value.name !== 'game') {
+          router.push({ name: 'game', params: { roomId: roomId.value } })
+        } else if (
+          gameState.value.gameState !== 'playing' &&
+          router.currentRoute.value.name === 'game'
+        ) {
+          // If game ends/stops while in game view, navigate back to lobby
+          // You might want a slight delay or confirmation here
+          // For now, let's keep it simple: if not playing, go back to lobby
+          router.push({ name: 'lobby' })
+        }
       } else {
         // If the room itself is deleted from Firebase, clear local gameState
         gameState.value = {}

@@ -58,7 +58,7 @@ async function handleSign() {
     //email.value = ''
     //password.value = ''
     //window.location.href = '/lobby'
-    router.push('/gameroom')
+    router.push('/lobby')
   } catch (err) {
     console.log('error')
     error.value = err.message
@@ -100,3 +100,4 @@ body {
   padding: 20px;
 }
 </style>
+pass

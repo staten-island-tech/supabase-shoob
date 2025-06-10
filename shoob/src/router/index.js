@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import GameLobby from '../views/GameLobby.vue'
-import GameRoom from '../views/GameRoom.vue'
+
+import GameView from '../views/GameView.vue'
+import LobbyView from '../views/LobbyView.vue'
 import LoginPage from '../views/LoginPage.vue'
 import PlayerProfile from '../views/PlayerProfile.vue'
 import { auth } from '../../firebaseConfig.js'
@@ -19,17 +20,10 @@ const router = createRouter({
       component: LoginPage,
     },
     {
-      // to see all available rooms
+      //for when someone joins a room, figure out how to attach a unique id to it? or just consolidate it with lobby? or just make this the actual room when the game is running
       path: '/lobby',
       name: 'lobby',
-      component: GameLobby, // Using HomeView as GameLobby
-      meta: { requiresAuth: true },
-    },
-    {
-      //for when someone joins a room, figure out how to attach a unique id to it? or just consolidate it with lobby? or just make this the actual room when the game is running
-      path: '/gameroom',
-      name: 'gameroom',
-      component: GameRoom,
+      component: LobbyView,
       meta: { requiresAuth: true },
     },
     {
@@ -37,6 +31,12 @@ const router = createRouter({
       name: 'profile',
       component: PlayerProfile,
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/game/:roomId',
+      name: 'game',
+      component: GameView,
+      props: true,
     },
   ],
 })
