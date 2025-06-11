@@ -129,17 +129,23 @@
         >
           <div
             v-for="n in (gameState.gridDim || 4) ** 2"
-            :key="n - 1"
+            :key="n"
             class="hole"
-            @click="whack(n - 1)"
+            @click="whack(moleId)"
           >
-            <template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
+            <!-- Check if a mole exists at this spot -->
+            <template
+              v-for="(mole, moleId) in currentVisibleMoles"
+              :key="moleId"
+              @click="whack(moleId)"
+            >
               <img
-                v-if="mole.index === n - 1 && mole.type === 'normal'"
-                alt="DEBUG MOLE"
+                v-if="mole.index === n - 1"
                 class="mole-img"
+                :alt="mole.type"
                 draggable="false"
                 :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
+                @click="whack(n - 1)"
               />
             </template>
           </div>
@@ -157,7 +163,6 @@ import {
   ref as dbRef,
   push,
   serverTimestamp,
-  ServerValue,
   onValue,
   update,
   remove,
@@ -295,30 +300,44 @@ async function generateAndPublishMole() {
 }
 
 async function whack(clickedIndex) {
-  if (gameState.value.gameState !== 'playing') return
+  console.log('attempted to whack', clickedIndex)
+  if (gameState.value.gameState !== 'playing') {
+    console.log('Game not in playing state. Whack skipped.')
+    return
+  }
 
   const user = auth.currentUser
   if (!user) return
 
   let whackedMoleId = null
+  console.log('Current visible moles:', currentVisibleMoles.value)
   for (const moleId in currentVisibleMoles.value) {
     const mole = currentVisibleMoles.value[moleId]
+    console.log(`Checking mole ID: ${moleId}, Index: ${mole.index}, WhackedBy: ${mole.whackedBy}`)
     if (mole && mole.index === clickedIndex && mole.whackedBy === null) {
       whackedMoleId = moleId
+      console.log('Found whackable mole ID:', whackedMoleId)
       break
     }
   }
 
   if (whackedMoleId) {
     try {
+      console.log(
+        `Attempting to update mole ${whackedMoleId} with whackedBy: ${user.uid} and whackedAt: serverTimestamp()`,
+      )
       await update(dbRef(db, `rooms/${props.roomId}/moles/${whackedMoleId}`), {
         whackedBy: user.uid,
         whackedAt: serverTimestamp(),
       })
-      console.log(`Player ${user.displayName || user.uid} whacked mole ${whackedMoleId}`)
+      console.log(
+        `Player ${user.displayName || user.uid} successfully triggered whack for mole ${whackedMoleId}`,
+      )
     } catch (error) {
-      console.error('Error whacking mole:', error)
+      console.error('Error whacking mole (Client-side caught error):', error)
     }
+  } else {
+    console.log('No whackable mole found at clicked index or already whacked.')
   }
 }
 
@@ -553,7 +572,7 @@ onUnmounted(() => {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   position: relative; /* For positioning moles */
   position: relative; /* REQUIRED for z-index to work */
-  z-index: -1; /* Puts it behind elements with z-index: 0 or auto */
+  z-index: 0; /* Puts it behind elements with z-index: 0 or auto */
 }
 
 .hole {
@@ -588,7 +607,14 @@ onUnmounted(() => {
 
 .mole-effect-img {
   animation: bonk-fade-out 0.5s ease-out forwards; /* Bonk/poof effect animation */
-  z-index: 10; /* Ensure effect is on top */
+  z-index: 9; /* Ensure effect is on top */
+}
+
+.mole {
+  position: absolute;
+  z-index: 10; /* ensure it’s above other elements */
+  pointer-events: auto;
+  cursor: pointer; /* visual feedback */
 }
 
 /* Animations */
