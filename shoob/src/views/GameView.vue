@@ -135,7 +135,7 @@
           >
             <template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
               <img
-                v-if="mole.index === n - 1"
+                v-if="mole.index === n - 1 && mole.type === 'normal'"
                 alt="DEBUG MOLE"
                 class="mole-img"
                 draggable="false"
@@ -157,6 +157,7 @@ import {
   ref as dbRef,
   push,
   serverTimestamp,
+  ServerValue,
   onValue,
   update,
   remove,
@@ -227,30 +228,44 @@ function stopMoleGeneration() {
 }
 
 async function cleanUpExpiredMoles() {
-  if (!isHost.value || !props.roomId) return // Only host cleans up
+  if (!isHost.value || !props.roomId) {
+    console.log('Cleanup skipped: Not host or no roomId.')
+    return
+  } // Only host cleans up
 
   const now = Date.now()
+  console.log('Current time for cleanup:', now)
   const molesSnapshot = await get(molesRef.value)
   const moles = molesSnapshot.val()
+  console.log('Current time for cleanup:', now)
 
-  if (!moles) return // No moles to clean up
+  if (!moles) {
+    console.log('No moles found to clean up.')
+    return
+  }
 
   const updates = {}
   for (const moleId in moles) {
     const mole = moles[moleId]
-    // Check if mole has despawnAt and it's in the past, AND it hasn't been whacked
-    if (mole.despawnAt && mole.despawnAt < now && mole.whackedBy === null) {
-      updates[`rooms/${props.roomId}/moles/${moleId}`] = null // Set to null to remove from Firebase
+    console.log(
+      `Checking mole ${moleId}: despawnAt=${mole.despawnAt}, whackedBy=${mole.whackedBy}, now=${now}`,
+    )
+
+    if (mole.despawnAt && mole.despawnAt <= now && !mole.whackedBy) {
+      updates[`rooms/${props.roomId}/moles/${moleId}`] = null
+      console.log(`Marking mole ${moleId} for removal.`)
     }
   }
 
   if (Object.keys(updates).length > 0) {
     try {
-      await update(dbRef(db, '/'), updates) // Apply all removals in one batch update
-      console.log('Cleaned up expired moles:', Object.keys(updates).length)
+      await update(dbRef(db, '/'), updates)
+      console.log('Cleaned up expired moles:', Object.keys(updates).length, 'Updates:', updates)
     } catch (error) {
       console.error('Error cleaning up moles:', error)
     }
+  } else {
+    console.log('No moles expired or ready for removal.')
   }
 }
 
