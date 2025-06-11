@@ -80,14 +80,73 @@
     </div>
   </div>
 </template> -->
-<template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
-  <img
-    v-if="mole.index === n - 1"
-    alt="DEBUG MOLE"
-    class="mole-img"
-    draggable="false"
-    :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
-  />
+<template>
+  <div class="game-view">
+    <h2 v-if="roomId">Playing in Room: {{ roomId }}</h2>
+    <p v-else>No room selected. Please go back to the <router-link to="/">lobby</router-link>.</p>
+
+    <div v-if="roomId && gameState.gameState">
+      <p>Game State: {{ gameState.gameState }}</p>
+
+      <h3>Players:</h3>
+      <div class="players-in-game">
+        <div v-for="(player, id) in gameState.players" :key="id" class="player-score-card">
+          <h4>{{ player.displayName }}</h4>
+          <p>Score: {{ player.score || 0 }}</p>
+          <p>Ability: {{ player.abilityPoints || 0 }}</p>
+          <span v-if="gameState.hostId === id"> (Host)</span>
+          <span v-if="auth.currentUser && id === auth.currentUser.uid"> (You)</span>
+        </div>
+      </div>
+
+      <div class="game-controls">
+        <button
+          v-if="isHost && gameState.gameState === 'playing'"
+          @click="updateGameState('ended')"
+        >
+          End Game
+        </button>
+        <button @click="leaveRoom">Leave Room</button>
+      </div>
+
+      <hr />
+
+      <div class="game-area">
+        <h3>Whack-A-Mole!</h3>
+        <p v-if="gameState.gameState === 'waiting'">Waiting for host to start the game...</p>
+        <p v-else-if="gameState.gameState === 'ended'">Game Over!</p>
+        <p v-else-if="gameState.gameState !== 'playing'">Game is not playing.</p>
+
+        <div
+          v-if="gameState.gameState === 'playing'"
+          class="grid-container"
+          :style="{
+            gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
+            gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
+            width: `${(gameState.gridDim || 4) * 80}px` /* Adjust for desired hole size */,
+            height: `${(gameState.gridDim || 4) * 80}px`,
+          }"
+        >
+          <div
+            v-for="n in (gameState.gridDim || 4) ** 2"
+            :key="n - 1"
+            class="hole"
+            @click="whack(n - 1)"
+          >
+            <template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
+              <img
+                v-if="mole.index === n - 1"
+                alt="DEBUG MOLE"
+                class="mole-img"
+                draggable="false"
+                :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
+              />
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
