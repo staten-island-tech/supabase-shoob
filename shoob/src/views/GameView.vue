@@ -1,85 +1,3 @@
-<!-- <template>
-  <div class="game-view">
-    <h2 v-if="roomId">Playing in Room: {{ roomId }}</h2>
-    <p v-else>No room selected. Please go back to the <router-link to="/">lobby</router-link>.</p>
-
-    <div v-if="roomId && gameState.gameState">
-      <p>Game State: {{ gameState.gameState }}</p>
-
-      <h3>Players:</h3>
-      <div class="players-in-game">
-        <div v-for="(player, id) in gameState.players" :key="id" class="player-score-card">
-          <h4>{{ player.displayName }}</h4>
-          <p>Score: {{ player.score || 0 }}</p>
-          <p>Ability: {{ player.abilityPoints || 0 }}</p>
-          <span v-if="gameState.hostId === id"> (Host)</span>
-          <span v-if="auth.currentUser && id === auth.currentUser.uid"> (You)</span>
-        </div>
-      </div>
-
-      <div class="game-controls">
-        <button
-          v-if="isHost && gameState.gameState === 'playing'"
-          @click="updateGameState('ended')"
-        >
-          End Game
-        </button>
-        <button @click="leaveRoom">Leave Room</button>
-      </div>
-
-      <hr />
-
-      <div class="game-area">
-        <h3>Whack-A-Mole!</h3>
-        <p v-if="gameState.gameState === 'waiting'">Waiting for host to start the game...</p>
-        <p v-else-if="gameState.gameState === 'ended'">Game Over!</p>
-        <p v-else-if="gameState.gameState !== 'playing'">Game is not playing.</p>
-
-        <div
-          v-if="gameState.gameState === 'playing'"
-          class="grid-container"
-          :style="{
-            gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            width: `${(gameState.gridDim || 4) * 80}px` /* Adjust for desired hole size */,
-            height: `${(gameState.gridDim || 4) * 80}px`,
-          }"
-        >
-          <div
-            v-for="n in (gameState.gridDim || 4) ** 2"
-            :key="n - 1"
-            class="hole"
-            @click="whack(n - 1)"
-          >
-            <template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
-              <img
-                v-if="mole.index === n - 1 && mole.whackedBy === null && mole.type === 'normal'"
-                alt="Normal Mole"
-                class="mole-img"
-                draggable="false"
-                src="/enemy.png"
-              />
-              <img
-                v-if="mole.index === n - 1 && mole.whackedBy === null && mole.type === 'special'"
-                alt="Special Mole"
-                class="mole-img special-mole"
-                draggable="false"
-                src="/enemy.png"
-              />
-              <img
-                v-if="mole.index === n - 1 && mole.whackedBy !== null && mole.whackedAt"
-                alt="Whack Effect"
-                class="mole-effect-img"
-                draggable="false"
-                :src="mole.whackedBy === auth.currentUser?.uid ? '/bonk.avif' : '/enemy.png'"
-              />
-            </template>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template> -->
 <template>
   <div class="game-view">
     <h2 v-if="roomId">Playing in Room: {{ roomId }}</h2>
@@ -99,56 +17,51 @@
         </div>
       </div>
 
-      <div class="game-controls">
+      <!--  <div class="game-controls">
         <button
           v-if="isHost && gameState.gameState === 'playing'"
           @click="updateGameState('ended')"
         >
           End Game
-        </button>
-        <button @click="leaveRoom">Leave Room</button>
-      </div>
+        </button> -->
+      <button @click="leaveRoom">Leave Room</button>
+    </div>
 
-      <hr />
+    <hr />
 
-      <div class="game-area">
-        <h3>Whack-A-Mole!</h3>
-        <p v-if="gameState.gameState === 'waiting'">Waiting for host to start the game...</p>
-        <p v-else-if="gameState.gameState === 'ended'">Game Over!</p>
-        <p v-else-if="gameState.gameState !== 'playing'">Game is not playing.</p>
+    <div class="game-area">
+      <h3>Whack-A-Mole!</h3>
+      <p v-if="gameState.gameState === 'playing'">Time Left: {{ gameTimer }} seconds</p>
+      <p v-if="gameState.gameState === 'waiting'">Waiting for host to start the game...</p>
+      <p v-else-if="gameState.gameState === 'ended'">Game Over!</p>
+      <p v-else-if="gameState.gameState !== 'playing'">Game is not playing.</p>
 
-        <div
-          v-if="gameState.gameState === 'playing'"
-          class="grid-container"
-          :style="{
-            gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            width: `${(gameState.gridDim || 4) * 80}px` /* Adjust for desired hole size */,
-            height: `${(gameState.gridDim || 4) * 80}px`,
-          }"
-        >
-          <div
-            v-for="n in (gameState.gridDim || 4) ** 2"
-            :key="n"
-            class="hole"
+      <div
+        v-if="gameState.gameState === 'playing'"
+        class="grid-container"
+        :style="{
+          gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
+          gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
+          width: `${(gameState.gridDim || 4) * 80}px` /* Adjust for desired hole size */,
+          height: `${(gameState.gridDim || 4) * 80}px`,
+        }"
+      >
+        <div v-for="n in (gameState.gridDim || 4) ** 2" :key="n" class="hole" @click="whack(n - 1)">
+          <!-- Check if a mole exists at this spot -->
+          <template
+            v-for="(mole, moleId) in currentVisibleMoles"
+            :key="moleId"
             @click="whack(n - 1)"
           >
-            <!-- Check if a mole exists at this spot -->
-            <template
-              v-for="(mole, moleId) in currentVisibleMoles"
-              :key="moleId"
+            <img
+              v-if="mole.index === n - 1"
+              class="mole-img"
+              :alt="mole.type"
+              draggable="false"
+              :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
               @click="whack(n - 1)"
-            >
-              <img
-                v-if="mole.index === n - 1"
-                class="mole-img"
-                :alt="mole.type"
-                draggable="false"
-                :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
-                @click="whack(n - 1)"
-              />
-            </template>
-          </div>
+            />
+          </template>
         </div>
       </div>
     </div>
@@ -179,6 +92,9 @@ const props = defineProps({
 })
 
 const auth = getAuth()
+
+const gameTimer = ref(30)
+let countdownInterval = null
 
 let moleGenerationInterval = null
 let moleCleanupInterval = null
@@ -492,20 +408,59 @@ function listenForMoles() {
   }
 }
 
-// --- Watchers for GameView ---
-// Watch gameState.value.gameState to trigger mole generation/stopping for the host
 watch(
   () => gameState.value.gameState,
   (newStatus) => {
     console.log('Game State changed to:', newStatus, 'Is Host:', isHost.value)
-    if (newStatus === 'playing' && isHost.value) {
-      startMoleGeneration()
-    } else if (newStatus !== 'playing') {
+    if (newStatus === 'playing') {
+      if (isHost.value) {
+        startMoleGeneration()
+        startGameCountdown()
+      }
+    } else {
       stopMoleGeneration()
+      clearGameCountdown()
     }
   },
   { immediate: true }, // Run immediately on component mount/if gameState is already set
 )
+
+function startGameCountdown() {
+  gameTimer.value = 15 //patience isnt a virtue. it's for the weak.
+  countdownInterval = setInterval(async () => {
+    gameTimer.value--
+    if (gameTimer.value <= 0) {
+      clearInterval(countdownInterval)
+      countdownInterval = null
+      const user = auth.currentUser
+      if (!user) return
+
+      // Get the final score
+      const playerRef = dbRef(db, `rooms/${props.roomId}/players/${user.uid}`)
+      const playerSnapshot = await get(playerRef)
+      const currentPlayer = playerSnapshot.val()
+      const finalScore = currentPlayer?.score || 0
+
+      // Optional: Define what "winning" means (e.g., top score)
+      let didWin = false
+      const allPlayersSnapshot = await get(dbRef(db, `rooms/${props.roomId}/players`))
+      const allPlayers = allPlayersSnapshot.val() || {}
+
+      const topScore = Math.max(...Object.values(allPlayers).map((p) => p.score || 0))
+      didWin = finalScore >= topScore
+
+      await updateStats(finalScore, didWin)
+      await updateGameState('ended')
+    }
+  }, 1000)
+}
+
+function clearGameCountdown() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval)
+    countdownInterval = null
+  }
+}
 
 watch(
   () => props.roomId,
@@ -523,6 +478,33 @@ watch(
   },
   { immediate: true },
 )
+
+async function updateStats(score, didWin) {
+  const auth = getAuth()
+  const user = auth.currentUser
+
+  if (!user) return
+
+  const userRef = dbRef(db, `users/${user.uid}`)
+  const snapshot = await get(userRef)
+
+  if (!snapshot.exists()) return
+
+  const data = snapshot.val()
+  const updates = {}
+
+  if (didWin) {
+    updates.wins = (data.wins || 0) + 1
+  }
+
+  if (!data.highscore || score > data.highscore) {
+    updates.highscore = score
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await update(userRef, updates)
+  }
+}
 
 // --- Lifecycle Hooks ---
 onMounted(() => {

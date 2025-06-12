@@ -4,7 +4,7 @@
     <RoomInfo :rooms="rooms"></RoomInfo>
 
     <ul>
-      <li v-for="(room, id) in rooms" :key="id">
+      <li :class="{ active: id === roomId }" v-for="(room, id) in rooms" :key="id">
         <button @click="selectRoom(id)">{{ id }}</button>
         <span v-if="room.hostId">
           (Host: {{ getPlayerDisplayName(room, room.hostId) }}
@@ -298,4 +298,69 @@ onUnmounted(() => {
   }
 })
 </script>
-<style scoped></style>
+
+<style scoped>
+.active {
+  background-color: #eaf4ff;
+}
+
+div {
+  max-width: 800px;
+  margin: auto;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+h2 {
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  color: #2c3e50;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  background-color: #ffffff;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+li span {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+button {
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #00ff22;
+  color: #000000;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #109722;
+  color: #ffffff;
+}
+
+input {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-right: 0.5rem;
+  width: 60%;
+}
+</style>

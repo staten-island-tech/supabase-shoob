@@ -67,8 +67,7 @@ router.beforeEach((to, from, next) => {
       })
     })
   } else {
-    const user = auth.currentUser
-    if (user) {
+    if (auth.currentUser) {
       next()
     } else {
       next('/login')

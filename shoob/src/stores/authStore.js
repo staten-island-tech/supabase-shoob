@@ -8,7 +8,7 @@ import {
   browserLocalPersistence,
 } from 'firebase/auth'
 import { auth, db } from '../../firebaseConfig' // <-- Make sure 'db' is imported here
-import { ref as dbRef, get, update, remove } from 'firebase/database' // <-- Import Realtime Database functions
+import { ref as dbRef, get, update, remove, set } from 'firebase/database' // <-- Import Realtime Database functions
 import router from '../router'
 
 export const useAuthStore = defineStore('auth', {
@@ -26,12 +26,16 @@ export const useAuthStore = defineStore('auth', {
         console.log('Firebase Auth State Changed:', user ? user.email : 'No user')
       })
     },
-
     async registerUser(email, password) {
       this.storeError = null
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         const user = userCredential.user
+        await set(dbRef(db, `users/${user.uid}`), {
+          email: user.email,
+          wins: 0,
+          highScore: 0,
+        })
         console.log('registered:', user)
       } catch (error) {
         console.error('register error:', error.message)
@@ -46,9 +50,10 @@ export const useAuthStore = defineStore('auth', {
         await setPersistence(auth, browserLocalPersistence)
         const userCredential = await signInWithEmailAndPassword(auth, email, password)
         const user = userCredential.user
-        console.log('logged in:', user.email)
+        console.log('User logged in:', user.email)
+        return userCredential
       } catch (error) {
-        console.error('login error:', error.message)
+        console.error('Login error:', error.message)
         this.storeError = error.message
         throw error
       }
@@ -116,12 +121,15 @@ export const useAuthStore = defineStore('auth', {
 
         // Finally, sign out from Firebase Authentication
         await signOut(auth)
-        console.log('signed out')
-        router.push('/') // Redirect to the home/lobby page
+        console.log('Firebase signed out successfully.')
+
+        // Explicitly redirect to the login page after logout
+        await router.push('/login') // <-- Direct push to login page
+        console.log('Redirected to login page after logout.')
       } catch (error) {
-        console.error('sign out error:', error.message)
+        console.error('Sign out error:', error.message)
         this.storeError = error.message
-        throw error
+        throw error // Re-throw to allow component to catch and display
       }
     },
   },
