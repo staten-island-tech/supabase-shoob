@@ -98,7 +98,7 @@ let countdownInterval = null
 
 let moleGenerationInterval = null
 let moleCleanupInterval = null
-const MOLE_LIFETIME_MS = 200
+const MOLE_LIFETIME_MS = 700
 
 // Game State and Moles
 const gameState = ref({}) // Represents the specific room's full game state
@@ -128,7 +128,7 @@ function startMoleGeneration() {
 
   moleGenerationInterval = setInterval(() => {
     generateAndPublishMole()
-  }, 300) // Moles every 1 second
+  }, 200)
   console.log('Mole generation started by host.')
 
   moleCleanupInterval = setInterval(() => {
