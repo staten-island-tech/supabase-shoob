@@ -3,9 +3,11 @@
     <header>
       <div class="wrapper">
         <nav>
-          <RouterLink v-if="authStore.user" to="/lobby">gameroom</RouterLink>
+          <RouterLink v-if="authStore.user && !isInGame" to="/lobby">gameroom</RouterLink>
           <RouterLink v-if="authStore.user && !isInGame" to="/profile">profile</RouterLink>
-          <button v-if="authStore.user" :userData="user" @click="logout">Logout</button>
+          <button v-if="authStore.user && !isInGame" :userData="user" @click="logout">
+            Logout
+          </button>
         </nav>
       </div>
     </header>

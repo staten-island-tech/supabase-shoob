@@ -11,7 +11,7 @@
         <div v-for="(player, id) in gameState.players" :key="id" class="player-score-card">
           <h4>{{ player.displayName }}</h4>
           <p>Score: {{ player.score || 0 }}</p>
-          <p>Ability: {{ player.abilityPoints || 0 }}</p>
+          <!--<p>Ability: {{ player.abilityPoints || 0 }}</p>-->
           <span v-if="gameState.hostId === id"> (Host)</span>
           <span v-if="auth.currentUser && id === auth.currentUser.uid"> (You)</span>
         </div>
@@ -24,7 +24,7 @@
         >
           End Game
         </button> -->
-      <button @click="leaveRoom">Leave Room</button>
+      <!--<button @click="leaveRoom">Leave Room</button>-->
     </div>
 
     <hr />
@@ -98,7 +98,7 @@ let countdownInterval = null
 
 let moleGenerationInterval = null
 let moleCleanupInterval = null
-const MOLE_LIFETIME_MS = 2000
+const MOLE_LIFETIME_MS = 700
 
 // Game State and Moles
 const gameState = ref({}) // Represents the specific room's full game state
@@ -128,12 +128,12 @@ function startMoleGeneration() {
 
   moleGenerationInterval = setInterval(() => {
     generateAndPublishMole()
-  }, 1000) // Moles every 1 second
+  }, 200)
   console.log('Mole generation started by host.')
 
   moleCleanupInterval = setInterval(() => {
     cleanUpExpiredMoles()
-  }, 500)
+  }, 100)
 }
 
 function stopMoleGeneration() {
@@ -426,7 +426,7 @@ watch(
 )
 
 function startGameCountdown() {
-  gameTimer.value = 15 //patience isnt a virtue. it's for the weak.
+  gameTimer.value = 28
   countdownInterval = setInterval(async () => {
     gameTimer.value--
     if (gameTimer.value <= 0) {

@@ -4,12 +4,21 @@
     <RoomInfo :rooms="rooms"></RoomInfo>
 
     <ul>
-      <li :class="{ active: id === roomId }" v-for="(room, id) in rooms" :key="id">
-        <button @click="selectRoom(id)">{{ id }}</button>
+      <li
+        :class="{ active: id === roomId, disabled: room.gameState === 'playing' }"
+        v-for="(room, id) in rooms"
+        :key="id"
+      >
+        <button @click="selectRoom(id)" :disabled="room.gameState === 'playing'">
+          {{ id }}
+        </button>
         <span v-if="room.hostId">
           (Host: {{ getPlayerDisplayName(room, room.hostId) }}
           <span v-if="auth.currentUser && room.hostId === auth.currentUser.uid">(You)</span>
-          )</span
+          )
+        </span>
+        <span v-if="room.gameState === 'playing'" style="margin-left: 0.5rem; color: red"
+          >(In Progress)</span
         >
       </li>
     </ul>
@@ -300,6 +309,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .active {
   background-color: #eaf4ff;
 }
