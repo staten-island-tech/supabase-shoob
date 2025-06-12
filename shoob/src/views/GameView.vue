@@ -313,11 +313,14 @@ async function whack(clickedIndex) {
   console.log('Current visible moles:', currentVisibleMoles.value)
   for (const moleId in currentVisibleMoles.value) {
     const mole = currentVisibleMoles.value[moleId]
-    console.log(`Checking mole ID: ${moleId}, Index: ${mole.index}, WhackedBy: ${mole.whackedBy}`)
+    console.log(
+      `Checking mole ID: ${moleId}, Index: ${mole.index}, WhackedBy: ${mole.whackedBy} (type: ${typeof mole.whackedBy})`,
+    )
+
     if (
       mole &&
       mole.index === clickedIndex &&
-      (mole.whackedBy === null || mole.whackedBy === undefined)
+      (mole.whackedBy === null || typeof mole.whackedBy === 'undefined')
     ) {
       whackedMoleId = moleId
       console.log('Found whackable mole ID:', whackedMoleId)
@@ -327,16 +330,18 @@ async function whack(clickedIndex) {
 
   if (whackedMoleId) {
     try {
-      // 1. Update mole's whacked status
+      // *** COMBINE ALL MOLE UPDATES INTO A SINGLE CALL ***
       await update(dbRef(db, `rooms/${props.roomId}/moles/${whackedMoleId}`), {
         whackedBy: user.uid,
         whackedAt: serverTimestamp(),
+        despawnAt: Date.now(), // This needs to be part of the same atomic update
       })
       console.log(
-        `Player ${user.displayName || user.uid} successfully triggered whack for mole ${whackedMoleId}`,
+        `Player ${user.displayName || user.uid} successfully whacked mole ${whackedMoleId} and set despawnAt.`,
       )
+      // *** END COMBINED UPDATE ***
 
-      // 2. Add score to the player (assuming this part is already implemented)
+      // 2. Add score to the player
       const playerRef = dbRef(db, `rooms/${props.roomId}/players/${user.uid}`)
       const playerSnapshot = await get(playerRef)
       const currentPlayer = playerSnapshot.val()
@@ -352,21 +357,14 @@ async function whack(clickedIndex) {
       console.log(
         `Player ${user.displayName || user.uid} scored ${pointsToAdd} points. New score: ${currentScore + pointsToAdd}`,
       )
-
-      // *** ADD THIS PART: Make the whacked mole immediately eligible for cleanup ***
-      await update(dbRef(db, `rooms/${props.roomId}/moles/${whackedMoleId}`), {
-        despawnAt: Date.now(), // Set despawnAt to the current client time
-      })
-      console.log(`Mole ${whackedMoleId} despawnAt set to now for immediate cleanup.`)
-      // *** END ADDED PART ***
     } catch (error) {
-      console.error('Error whacking mole:', error)
+      console.error('Error whacking mole (Client-side caught error):', error)
+      // If you see "PERMISSION_DENIED" here, your Firebase rules for player scores need adjustment.
     }
   } else {
     console.log('No whackable mole found at clicked index or already whacked.')
   }
 }
-
 // --- Game State Update (for host to end game) ---
 async function updateGameState(status) {
   if (!props.roomId) return
