@@ -17,16 +17,7 @@
 <script setup>
 import { useAuthStore } from './stores/authStore'
 import { RouterLink, RouterView } from 'vue-router'
-
-/*IDEAS:
-Whack a mole
-special mole gives currency, which you can spend with keybinds to sabotage other person
-turn other persons screen a different color
-special mole you have to prioritize or you explode
-
-presets: whales + whalen? whalen + henriqueses
-normal mole and special mole
-*/
+import { onMounted } from 'vue'
 
 //this is from pinia
 const authStore = useAuthStore()
@@ -35,6 +26,9 @@ const user = authStore.user
 async function logout() {
   await authStore.logoutUser()
 }
+onMounted(() => {
+  authStore.initAuth()
+})
 </script>
 
 <style scoped>

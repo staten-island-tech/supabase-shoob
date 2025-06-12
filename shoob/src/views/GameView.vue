@@ -426,12 +426,30 @@ watch(
 )
 
 function startGameCountdown() {
-  gameTimer.value = 30
+  gameTimer.value = 15 //patience isnt a virtue. it's for the weak.
   countdownInterval = setInterval(async () => {
     gameTimer.value--
     if (gameTimer.value <= 0) {
       clearInterval(countdownInterval)
       countdownInterval = null
+      const user = auth.currentUser
+      if (!user) return
+
+      // Get the final score
+      const playerRef = dbRef(db, `rooms/${props.roomId}/players/${user.uid}`)
+      const playerSnapshot = await get(playerRef)
+      const currentPlayer = playerSnapshot.val()
+      const finalScore = currentPlayer?.score || 0
+
+      // Optional: Define what "winning" means (e.g., top score)
+      let didWin = false
+      const allPlayersSnapshot = await get(dbRef(db, `rooms/${props.roomId}/players`))
+      const allPlayers = allPlayersSnapshot.val() || {}
+
+      const topScore = Math.max(...Object.values(allPlayers).map((p) => p.score || 0))
+      didWin = finalScore >= topScore
+
+      await updateStats(finalScore, didWin)
       await updateGameState('ended')
     }
   }, 1000)
@@ -460,6 +478,33 @@ watch(
   },
   { immediate: true },
 )
+
+async function updateStats(score, didWin) {
+  const auth = getAuth()
+  const user = auth.currentUser
+
+  if (!user) return
+
+  const userRef = dbRef(db, `users/${user.uid}`)
+  const snapshot = await get(userRef)
+
+  if (!snapshot.exists()) return
+
+  const data = snapshot.val()
+  const updates = {}
+
+  if (didWin) {
+    updates.wins = (data.wins || 0) + 1
+  }
+
+  if (!data.highscore || score > data.highscore) {
+    updates.highscore = score
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await update(userRef, updates)
+  }
+}
 
 // --- Lifecycle Hooks ---
 onMounted(() => {
