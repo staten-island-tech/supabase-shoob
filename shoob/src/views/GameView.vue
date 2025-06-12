@@ -102,7 +102,7 @@ let moleGenerationInterval = null
 let moleCleanupInterval = null
 let gameTimerInterval = null // <-- New: for game countdown
 const MOLE_LIFETIME_MS = 2000
-const GAME_DURATION_MS = 30 * 1000 // <-- New: 30 seconds for the game
+const GAME_DURATION_MS = 5 * 1000 // <-- New: 30 seconds for the game
 
 const gameState = ref({})
 const currentVisibleMoles = ref({})
@@ -130,42 +130,64 @@ async function startGame() {
       startTime: serverTimestamp(), // Use server timestamp for accuracy
       gameDuration: GAME_DURATION_MS,
     })
-    console.log('Game started by host. State set to playing.')
+    console.log(`Game started by host. State set to playing.`)
   } catch (error) {
     console.error('Error starting game:', error)
   }
 }
 
+let gameTimerTimeout = null
+
 function startOrUpdateGameTimer() {
+  console.log('Timer setup called')
+
+  // Clear any previous timers
+  if (gameTimerTimeout) {
+    clearTimeout(gameTimerTimeout)
+    gameTimerTimeout = null
+  }
   if (gameTimerInterval) {
     clearInterval(gameTimerInterval)
+    gameTimerInterval = null
   }
 
-  // Only run timer if game is playing and we have a start time
+  // Ensure game is playing and required times exist
   if (
     gameState.value.gameState === 'playing' &&
     gameState.value.startTime &&
     gameState.value.gameDuration
   ) {
+    const now = Date.now()
     const gameEndTime = gameState.value.startTime + gameState.value.gameDuration
+    const timeUntilEnd = Math.max(0, gameEndTime - now)
 
+    // Set initial value for UI
+    gameTimeRemaining.value = timeUntilEnd
+    console.log(`Game will end in ${timeUntilEnd}ms at ${gameEndTime}`)
+
+    // === UI countdown (optional but nice) ===
     gameTimerInterval = setInterval(() => {
-      const now = Date.now()
-      const remaining = gameEndTime - now
-      gameTimeRemaining.value = Math.max(0, remaining) // Ensure it doesn't go negative
+      const remaining = gameEndTime - Date.now()
+      gameTimeRemaining.value = Math.max(0, remaining)
 
-      if (gameTimeRemaining.value <= 0) {
+      if (remaining <= 0) {
         clearInterval(gameTimerInterval)
         gameTimerInterval = null
-        console.log('Game timer ran out.')
-        // Only host ends the game state
-        if (isHost.value) {
-          updateGameState('ended')
-        }
       }
-    }, 100) // Update every 100ms for smoother countdown
+    }, 100)
+
+    // === Main timeout for game end ===
+    gameTimerTimeout = setTimeout(() => {
+      console.log('Game timer reached end (via timeout).')
+      gameTimeRemaining.value = 0 // Update final display
+      if (isHost.value) {
+        updateGameState('ended')
+      }
+    }, timeUntilEnd)
   } else {
-    gameTimeRemaining.value = 0 // Reset if not playing
+    // Not playing — reset everything
+    gameTimeRemaining.value = 0
+    console.log('Game not playing. Timer reset.')
   }
 }
 
