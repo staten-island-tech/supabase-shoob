@@ -17,56 +17,51 @@
         </div>
       </div>
 
-      <div class="game-controls">
+      <!--  <div class="game-controls">
         <button
           v-if="isHost && gameState.gameState === 'playing'"
           @click="updateGameState('ended')"
         >
           End Game
-        </button>
-        <button @click="leaveRoom">Leave Room</button>
-      </div>
+        </button> -->
+      <button @click="leaveRoom">Leave Room</button>
+    </div>
 
-      <hr />
+    <hr />
 
-      <div class="game-area">
-        <h3>Whack-A-Mole!</h3>
-        <p v-if="gameState.gameState === 'waiting'">Waiting for host to start the game...</p>
-        <p v-else-if="gameState.gameState === 'ended'">Game Over!</p>
-        <p v-else-if="gameState.gameState !== 'playing'">Game is not playing.</p>
+    <div class="game-area">
+      <h3>Whack-A-Mole!</h3>
+      <p v-if="gameState.gameState === 'playing'">Time Left: {{ gameTimer }} seconds</p>
+      <p v-if="gameState.gameState === 'waiting'">Waiting for host to start the game...</p>
+      <p v-else-if="gameState.gameState === 'ended'">Game Over!</p>
+      <p v-else-if="gameState.gameState !== 'playing'">Game is not playing.</p>
 
-        <div
-          v-if="gameState.gameState === 'playing'"
-          class="grid-container"
-          :style="{
-            gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            width: `${(gameState.gridDim || 4) * 80}px` /* Adjust for desired hole size */,
-            height: `${(gameState.gridDim || 4) * 80}px`,
-          }"
-        >
-          <div
-            v-for="n in (gameState.gridDim || 4) ** 2"
-            :key="n"
-            class="hole"
+      <div
+        v-if="gameState.gameState === 'playing'"
+        class="grid-container"
+        :style="{
+          gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
+          gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
+          width: `${(gameState.gridDim || 4) * 80}px` /* Adjust for desired hole size */,
+          height: `${(gameState.gridDim || 4) * 80}px`,
+        }"
+      >
+        <div v-for="n in (gameState.gridDim || 4) ** 2" :key="n" class="hole" @click="whack(n - 1)">
+          <!-- Check if a mole exists at this spot -->
+          <template
+            v-for="(mole, moleId) in currentVisibleMoles"
+            :key="moleId"
             @click="whack(n - 1)"
           >
-            <!-- Check if a mole exists at this spot -->
-            <template
-              v-for="(mole, moleId) in currentVisibleMoles"
-              :key="moleId"
+            <img
+              v-if="mole.index === n - 1"
+              class="mole-img"
+              :alt="mole.type"
+              draggable="false"
+              :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
               @click="whack(n - 1)"
-            >
-              <img
-                v-if="mole.index === n - 1"
-                class="mole-img"
-                :alt="mole.type"
-                draggable="false"
-                :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
-                @click="whack(n - 1)"
-              />
-            </template>
-          </div>
+            />
+          </template>
         </div>
       </div>
     </div>
@@ -97,6 +92,9 @@ const props = defineProps({
 })
 
 const auth = getAuth()
+
+const gameTimer = ref(30)
+let countdownInterval = null
 
 let moleGenerationInterval = null
 let moleCleanupInterval = null
@@ -410,20 +408,41 @@ function listenForMoles() {
   }
 }
 
-// --- Watchers for GameView ---
-// Watch gameState.value.gameState to trigger mole generation/stopping for the host
 watch(
   () => gameState.value.gameState,
   (newStatus) => {
     console.log('Game State changed to:', newStatus, 'Is Host:', isHost.value)
-    if (newStatus === 'playing' && isHost.value) {
-      startMoleGeneration()
-    } else if (newStatus !== 'playing') {
+    if (newStatus === 'playing') {
+      if (isHost.value) {
+        startMoleGeneration()
+        startGameCountdown()
+      }
+    } else {
       stopMoleGeneration()
+      clearGameCountdown()
     }
   },
   { immediate: true }, // Run immediately on component mount/if gameState is already set
 )
+
+function startGameCountdown() {
+  gameTimer.value = 30
+  countdownInterval = setInterval(async () => {
+    gameTimer.value--
+    if (gameTimer.value <= 0) {
+      clearInterval(countdownInterval)
+      countdownInterval = null
+      await updateGameState('ended')
+    }
+  }, 1000)
+}
+
+function clearGameCountdown() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval)
+    countdownInterval = null
+  }
+}
 
 watch(
   () => props.roomId,
