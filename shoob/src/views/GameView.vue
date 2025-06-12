@@ -131,13 +131,13 @@
             v-for="n in (gameState.gridDim || 4) ** 2"
             :key="n"
             class="hole"
-            @click="whack(moleId)"
+            @click="whack(n - 1)"
           >
             <!-- Check if a mole exists at this spot -->
             <template
               v-for="(mole, moleId) in currentVisibleMoles"
               :key="moleId"
-              @click="whack(moleId)"
+              @click="whack(n - 1)"
             >
               <img
                 v-if="mole.index === n - 1"
@@ -236,7 +236,7 @@ async function cleanUpExpiredMoles() {
   if (!isHost.value || !props.roomId) {
     console.log('Cleanup skipped: Not host or no roomId.')
     return
-  } // Only host cleans up
+  }
 
   const now = Date.now()
   console.log('Current time for cleanup:', now)
@@ -256,9 +256,9 @@ async function cleanUpExpiredMoles() {
       `Checking mole ${moleId}: despawnAt=${mole.despawnAt}, whackedBy=${mole.whackedBy}, now=${now}`,
     )
 
-    if (mole.despawnAt && mole.despawnAt <= now && !mole.whackedBy) {
-      updates[`rooms/${props.roomId}/moles/${moleId}`] = null
-      console.log(`Marking mole ${moleId} for removal.`)
+    if (mole.despawnAt && mole.despawnAt <= now) {
+      updates[`rooms/${props.roomId}/moles/${moleId}`] = null // Mark for removal
+      console.log(`Marking expired mole ${moleId} for removal (whacked: ${!!mole.whackedBy}).`)
     }
   }
 
@@ -314,7 +314,11 @@ async function whack(clickedIndex) {
   for (const moleId in currentVisibleMoles.value) {
     const mole = currentVisibleMoles.value[moleId]
     console.log(`Checking mole ID: ${moleId}, Index: ${mole.index}, WhackedBy: ${mole.whackedBy}`)
-    if (mole && mole.index === clickedIndex && mole.whackedBy === null) {
+    if (
+      mole &&
+      mole.index === clickedIndex &&
+      (mole.whackedBy === null || mole.whackedBy === undefined)
+    ) {
       whackedMoleId = moleId
       console.log('Found whackable mole ID:', whackedMoleId)
       break
@@ -323,9 +327,7 @@ async function whack(clickedIndex) {
 
   if (whackedMoleId) {
     try {
-      console.log(
-        `Attempting to update mole ${whackedMoleId} with whackedBy: ${user.uid} and whackedAt: serverTimestamp()`,
-      )
+      // 1. Update mole's whacked status
       await update(dbRef(db, `rooms/${props.roomId}/moles/${whackedMoleId}`), {
         whackedBy: user.uid,
         whackedAt: serverTimestamp(),
@@ -333,8 +335,32 @@ async function whack(clickedIndex) {
       console.log(
         `Player ${user.displayName || user.uid} successfully triggered whack for mole ${whackedMoleId}`,
       )
+
+      // 2. Add score to the player (assuming this part is already implemented)
+      const playerRef = dbRef(db, `rooms/${props.roomId}/players/${user.uid}`)
+      const playerSnapshot = await get(playerRef)
+      const currentPlayer = playerSnapshot.val()
+      const currentScore = currentPlayer?.score || 0
+
+      let pointsToAdd = 10
+      const whackedMole = currentVisibleMoles.value[whackedMoleId]
+      if (whackedMole && whackedMole.type === 'special') {
+        pointsToAdd = 50
+      }
+
+      await update(playerRef, { score: currentScore + pointsToAdd })
+      console.log(
+        `Player ${user.displayName || user.uid} scored ${pointsToAdd} points. New score: ${currentScore + pointsToAdd}`,
+      )
+
+      // *** ADD THIS PART: Make the whacked mole immediately eligible for cleanup ***
+      await update(dbRef(db, `rooms/${props.roomId}/moles/${whackedMoleId}`), {
+        despawnAt: Date.now(), // Set despawnAt to the current client time
+      })
+      console.log(`Mole ${whackedMoleId} despawnAt set to now for immediate cleanup.`)
+      // *** END ADDED PART ***
     } catch (error) {
-      console.error('Error whacking mole (Client-side caught error):', error)
+      console.error('Error whacking mole:', error)
     }
   } else {
     console.log('No whackable mole found at clicked index or already whacked.')
@@ -598,7 +624,6 @@ onUnmounted(() => {
   position: absolute; /* Position within the hole */
   bottom: 0; /* Make them appear from the bottom */
   animation: pop-up 0.3s ease-out forwards; /* Simple pop-up animation */
-  pointer-events: none; /* Make image itself not clickable, only the hole */
 }
 
 .special-mole {
@@ -615,6 +640,10 @@ onUnmounted(() => {
   z-index: 10; /* ensure it’s above other elements */
   pointer-events: auto;
   cursor: pointer; /* visual feedback */
+}
+
+.hole {
+  cursor: pointer;
 }
 
 /* Animations */
