@@ -260,7 +260,7 @@ function listenForGameState() {
 }
 
 async function updateGameState(status) {
-  if (!roomId.value) return // Must be in a room
+  if (!roomId.value) return
   const user = auth.currentUser
   if (!user) return
 
@@ -273,7 +273,6 @@ async function updateGameState(status) {
   try {
     await update(dbRef(db, `rooms/${roomId.value}`), { gameState: status })
     console.log(`Game state updated to: ${status}`)
-    await update(dbRef(db, `rooms/${roomId.value}/gameState`), status)
 
     if (status === 'playing' && isHost.value) {
       startMoleGeneration()

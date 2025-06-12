@@ -55,7 +55,7 @@ async function generateAndPublishMole() {
   try {
     //push generates a unique ID for the mole
     await push(molesRef.value, newMoleData)
-    console.log(`Host generated new ${moleType} mole at index ${moleIndex}`)
+    console.log('Mole generated and pushed:', newMoleData)
   } catch (error) {
     console.error('Host failed to generate mole:', error)
   }
