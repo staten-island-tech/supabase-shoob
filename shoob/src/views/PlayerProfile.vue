@@ -15,76 +15,62 @@
 import { useAuthStore } from '@/stores/authstore'
 import { ref, watch, computed, onUnmounted } from 'vue'
 import { db } from '/firebaseConfig.js'
-import { ref as dbRef, get, onValue } from 'firebase/database'
+import { ref as dbRef, onValue } from 'firebase/database' // Using onValue for real-time
 
 const userData = ref(null)
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 
-console.log('Component mounted or re-rendered:')
-console.log('authStore.authReady:', authStore.authReady.value) // Use .value for ref
-console.log('authStore.user:', authStore.user)
-console.log('computed user:', user.value) // Use .value for computed ref
+let unsubscribeUserData = null // To store the unsubscribe function
 
-// Use a variable to hold the unsubscribe function for the real-time listener
-let unsubscribeUserData = null
-
-// Function to fetch user data
 async function fetchUserData(uid) {
-  // Unsubscribe from previous listener if it exists
+  // Always unsubscribe from previous listener before setting up a new one
   if (unsubscribeUserData) {
     unsubscribeUserData()
     unsubscribeUserData = null
   }
 
   if (!uid) {
-    userData.value = null // Clear data if no UID
+    userData.value = null
     return
   }
 
-  const userRef = dbRef(db, `users/${uid}`)
+  const userRef = dbRef(db, `users/${uid}`) // Reference to specific user's data
 
-  // Use onValue for real-time updates to the profile, which is generally better
-  // for displaying live user stats (e.g., if wins change elsewhere)
+  // Set up the real-time listener
   unsubscribeUserData = onValue(
     userRef,
     (snapshot) => {
       if (snapshot.exists()) {
-        userData.value = snapshot.val()
-        console.log('User data loaded:', userData.value)
+        userData.value = snapshot.val() // Data exists, update userData
       } else {
-        userData.value = null
-        console.log('User data does not exist for UID:', uid)
+        userData.value = null // No data, set userData to null
       }
     },
     (error) => {
       console.error('Error fetching user data:', error)
-      userData.value = null // Clear data on error
-      // Optionally, display a user-friendly error message
+      userData.value = null // Handle error
     },
   )
 }
 
-// Watch for changes in the user object from the auth store
-// This ensures that if the user logs in/out, the profile updates
+// Watch for changes in the logged-in user object
 watch(
   user,
-  async (newUser, oldUser) => {
+  async (newUser) => {
     if (newUser && newUser.uid) {
-      // Only fetch if a new valid user is present
-      await fetchUserData(newUser.uid)
+      await fetchUserData(newUser.uid) // Fetch/listen to data for the new user
     } else {
-      // If user logs out or becomes null, clear the data
-      userData.value = null
+      userData.value = null // Clear data if no user
       if (unsubscribeUserData) {
-        // Also unsubscribe if the user logs out
+        // Unsubscribe if user logs out
         unsubscribeUserData()
         unsubscribeUserData = null
       }
     }
   },
   { immediate: true },
-) // immediate: true runs the watcher once immediately on component mount
+) // Run immediately on component mount
 
 // Clean up the listener when the component is unmounted
 onUnmounted(() => {
