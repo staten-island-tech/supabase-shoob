@@ -4,7 +4,7 @@
       <div class="wrapper">
         <nav>
           <RouterLink v-if="authStore.user" to="/lobby">gameroom</RouterLink>
-          <RouterLink v-if="authStore.user" to="/profile">profile</RouterLink>
+          <RouterLink v-if="authStore.user && !isInGame" to="/profile">profile</RouterLink>
           <button v-if="authStore.user" :userData="user" @click="logout">Logout</button>
         </nav>
       </div>
@@ -16,16 +16,19 @@
 
 <script setup>
 import { useAuthStore } from './stores/authStore'
-import { RouterLink, RouterView } from 'vue-router'
-import { onMounted } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { onMounted, computed } from 'vue'
 
-//this is from pinia
 const authStore = useAuthStore()
 const user = authStore.user
+
+const route = useRoute()
+const isInGame = computed(() => route.name === 'game')
 
 async function logout() {
   await authStore.logoutUser()
 }
+
 onMounted(() => {
   authStore.initAuth()
 })
@@ -33,43 +36,49 @@ onMounted(() => {
 
 <style scoped>
 header {
-  line-height: 1.5;
-  max-height: 100vh;
+  background-color: #ff95ca;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+nav {
+  display: flex;
+  gap: 1rem;
 }
 
-.stuff {
-  background-color: white;
+nav a {
+  color: #000000;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+nav a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+button {
+  background-color: #ff00aa;
+  color: rgb(0, 0, 0);
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #c0392b;
 }
 </style>

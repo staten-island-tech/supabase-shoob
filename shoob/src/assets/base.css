@@ -1,3 +1,9 @@
+
+body {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+}
+
+
 /* color palette from <https://github.com/vuejs/theme> */
 /* :root {
   --vt-c-white: #ffffff;

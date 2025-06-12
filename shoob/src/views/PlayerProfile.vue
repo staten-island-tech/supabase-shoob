@@ -1,12 +1,15 @@
 <template>
   <div class="profile-card">
     <template v-if="userData">
-      <h2>{{ userData.displayName || 'Unnamed User' }}</h2>
+      <h2>{{ userData.email }}</h2>
       <p>Wins: {{ userData.wins || 0 }}</p>
       <p>High Score: {{ userData.highscore || 0 }}</p>
     </template>
     <p v-else-if="authStore.authReady && !user">Please log in to view your profile.</p>
-    <p v-else-if="authStore.authReady && user && !userData">User data not found :(</p>
+    <p v-else-if="authStore.authReady && user && !userData">
+      it's probably loading. give me a bit. (if it doesnt load after a long time, you're probably on
+      an old account. make a new one)
+    </p>
     <p v-else>Loading profile...</p>
   </div>
 </template>
@@ -15,16 +18,15 @@
 import { useAuthStore } from '@/stores/authstore'
 import { ref, watch, computed, onUnmounted } from 'vue'
 import { db } from '/firebaseConfig.js'
-import { ref as dbRef, onValue } from 'firebase/database' // Using onValue for real-time
+import { ref as dbRef, onValue } from 'firebase/database'
 
 const userData = ref(null)
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 
-let unsubscribeUserData = null // To store the unsubscribe function
+let unsubscribeUserData = null
 
 async function fetchUserData(uid) {
-  // Always unsubscribe from previous listener before setting up a new one
   if (unsubscribeUserData) {
     unsubscribeUserData()
     unsubscribeUserData = null
@@ -87,7 +89,7 @@ onUnmounted(() => {
   margin: 0 auto;
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-style: dotted;
   text-align: center;
   background-color: white;
 }
