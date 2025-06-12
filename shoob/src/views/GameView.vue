@@ -1,85 +1,3 @@
-<!-- <template>
-  <div class="game-view">
-    <h2 v-if="roomId">Playing in Room: {{ roomId }}</h2>
-    <p v-else>No room selected. Please go back to the <router-link to="/">lobby</router-link>.</p>
-
-    <div v-if="roomId && gameState.gameState">
-      <p>Game State: {{ gameState.gameState }}</p>
-
-      <h3>Players:</h3>
-      <div class="players-in-game">
-        <div v-for="(player, id) in gameState.players" :key="id" class="player-score-card">
-          <h4>{{ player.displayName }}</h4>
-          <p>Score: {{ player.score || 0 }}</p>
-          <p>Ability: {{ player.abilityPoints || 0 }}</p>
-          <span v-if="gameState.hostId === id"> (Host)</span>
-          <span v-if="auth.currentUser && id === auth.currentUser.uid"> (You)</span>
-        </div>
-      </div>
-
-      <div class="game-controls">
-        <button
-          v-if="isHost && gameState.gameState === 'playing'"
-          @click="updateGameState('ended')"
-        >
-          End Game
-        </button>
-        <button @click="leaveRoom">Leave Room</button>
-      </div>
-
-      <hr />
-
-      <div class="game-area">
-        <h3>Whack-A-Mole!</h3>
-        <p v-if="gameState.gameState === 'waiting'">Waiting for host to start the game...</p>
-        <p v-else-if="gameState.gameState === 'ended'">Game Over!</p>
-        <p v-else-if="gameState.gameState !== 'playing'">Game is not playing.</p>
-
-        <div
-          v-if="gameState.gameState === 'playing'"
-          class="grid-container"
-          :style="{
-            gridTemplateColumns: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            gridTemplateRows: `repeat(${gameState.gridDim || 4}, 1fr)`,
-            width: `${(gameState.gridDim || 4) * 80}px` /* Adjust for desired hole size */,
-            height: `${(gameState.gridDim || 4) * 80}px`,
-          }"
-        >
-          <div
-            v-for="n in (gameState.gridDim || 4) ** 2"
-            :key="n - 1"
-            class="hole"
-            @click="whack(n - 1)"
-          >
-            <template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
-              <img
-                v-if="mole.index === n - 1 && mole.whackedBy === null && mole.type === 'normal'"
-                alt="Normal Mole"
-                class="mole-img"
-                draggable="false"
-                src="/enemy.png"
-              />
-              <img
-                v-if="mole.index === n - 1 && mole.whackedBy === null && mole.type === 'special'"
-                alt="Special Mole"
-                class="mole-img special-mole"
-                draggable="false"
-                src="/enemy.png"
-              />
-              <img
-                v-if="mole.index === n - 1 && mole.whackedBy !== null && mole.whackedAt"
-                alt="Whack Effect"
-                class="mole-effect-img"
-                draggable="false"
-                :src="mole.whackedBy === auth.currentUser?.uid ? '/bonk.avif' : '/enemy.png'"
-              />
-            </template>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template> -->
 <template>
   <div class="game-view">
     <h2 v-if="roomId">Playing in Room: {{ roomId }}</h2>
@@ -88,6 +6,11 @@
     <div v-if="roomId && gameState.gameState">
       <p>Game State: {{ gameState.gameState }}</p>
 
+      <p v-if="gameState.gameState === 'playing' && gameTimeRemaining > 0">
+        Time Left: {{ Math.ceil(gameTimeRemaining / 1000) }}s
+      </p>
+      <p v-else-if="gameState.gameState === 'playing' && gameTimeRemaining <= 0">Time's Up!</p>
+
       <h3>Players:</h3>
       <div class="players-in-game">
         <div v-for="(player, id) in gameState.players" :key="id" class="player-score-card">
@@ -100,13 +23,15 @@
       </div>
 
       <div class="game-controls">
+        <button v-if="isHost && gameState.gameState === 'waiting'" @click="startGame">
+          Start Game
+        </button>
         <button
           v-if="isHost && gameState.gameState === 'playing'"
           @click="updateGameState('ended')"
         >
-          End Game
+          End Game Manually (For Debug)
         </button>
-        <button @click="leaveRoom">Leave Room</button>
       </div>
 
       <hr />
@@ -133,19 +58,13 @@
             class="hole"
             @click="whack(n - 1)"
           >
-            <!-- Check if a mole exists at this spot -->
-            <template
-              v-for="(mole, moleId) in currentVisibleMoles"
-              :key="moleId"
-              @click="whack(n - 1)"
-            >
+            <template v-for="(mole, moleId) in currentVisibleMoles" :key="moleId">
               <img
                 v-if="mole.index === n - 1"
                 class="mole-img"
                 :alt="mole.type"
                 draggable="false"
                 :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
-                @click="whack(n - 1)"
               />
             </template>
           </div>
@@ -170,7 +89,6 @@ import {
 } from 'firebase/database'
 import router from '../router'
 
-// Props: roomId is passed from the router
 const props = defineProps({
   roomId: {
     type: String,
@@ -182,24 +100,74 @@ const auth = getAuth()
 
 let moleGenerationInterval = null
 let moleCleanupInterval = null
+let gameTimerInterval = null // <-- New: for game countdown
 const MOLE_LIFETIME_MS = 2000
+const GAME_DURATION_MS = 30 * 1000 // <-- New: 30 seconds for the game
 
-// Game State and Moles
-const gameState = ref({}) // Represents the specific room's full game state
-const currentVisibleMoles = ref({}) // Live moles currently on the board
+const gameState = ref({})
+const currentVisibleMoles = ref({})
+const gameTimeRemaining = ref(0) // <-- New: Reactive variable for countdown display
 
-// Reactive Computeds for host and current user
 const currentUserId = computed(() => auth.currentUser?.uid)
 const isHost = computed(() => currentUserId.value === gameState.value.hostId)
-// Firebase References (computed based on the roomId prop)
+
 const gameRef = computed(() => dbRef(db, `rooms/${props.roomId}`))
 const molesRef = computed(() => dbRef(db, `rooms/${props.roomId}/moles`))
 
-// Firebase Unsubscribe Functions
 let unsubscribeGameState = null
 let unsubscribeMoles = null
 
-// --- Game Logic Functions ---
+// --- New Game Management Functions ---
+async function startGame() {
+  if (!isHost.value || gameState.value.gameState !== 'waiting') {
+    console.warn('Not allowed to start game: Not host or game not in waiting state.')
+    return
+  }
+  try {
+    const startTime = Date.now() // Record host's start time
+    await update(gameRef.value, {
+      gameState: 'playing',
+      startTime: serverTimestamp(), // Use server timestamp for accuracy
+      gameDuration: GAME_DURATION_MS,
+    })
+    console.log('Game started by host. State set to playing.')
+  } catch (error) {
+    console.error('Error starting game:', error)
+  }
+}
+
+function startOrUpdateGameTimer() {
+  if (gameTimerInterval) {
+    clearInterval(gameTimerInterval)
+  }
+
+  // Only run timer if game is playing and we have a start time
+  if (
+    gameState.value.gameState === 'playing' &&
+    gameState.value.startTime &&
+    gameState.value.gameDuration
+  ) {
+    const gameEndTime = gameState.value.startTime + gameState.value.gameDuration
+
+    gameTimerInterval = setInterval(() => {
+      const now = Date.now()
+      const remaining = gameEndTime - now
+      gameTimeRemaining.value = Math.max(0, remaining) // Ensure it doesn't go negative
+
+      if (gameTimeRemaining.value <= 0) {
+        clearInterval(gameTimerInterval)
+        gameTimerInterval = null
+        console.log('Game timer ran out.')
+        // Only host ends the game state
+        if (isHost.value) {
+          updateGameState('ended')
+        }
+      }
+    }, 100) // Update every 100ms for smoother countdown
+  } else {
+    gameTimeRemaining.value = 0 // Reset if not playing
+  }
+}
 
 function startMoleGeneration() {
   if (!isHost.value || gameState.value.gameState !== 'playing') {
@@ -330,18 +298,15 @@ async function whack(clickedIndex) {
 
   if (whackedMoleId) {
     try {
-      // *** COMBINE ALL MOLE UPDATES INTO A SINGLE CALL ***
       await update(dbRef(db, `rooms/${props.roomId}/moles/${whackedMoleId}`), {
         whackedBy: user.uid,
         whackedAt: serverTimestamp(),
-        despawnAt: Date.now(), // This needs to be part of the same atomic update
+        despawnAt: Date.now(),
       })
       console.log(
         `Player ${user.displayName || user.uid} successfully whacked mole ${whackedMoleId} and set despawnAt.`,
       )
-      // *** END COMBINED UPDATE ***
 
-      // 2. Add score to the player
       const playerRef = dbRef(db, `rooms/${props.roomId}/players/${user.uid}`)
       const playerSnapshot = await get(playerRef)
       const currentPlayer = playerSnapshot.val()
@@ -359,27 +324,25 @@ async function whack(clickedIndex) {
       )
     } catch (error) {
       console.error('Error whacking mole (Client-side caught error):', error)
-      // If you see "PERMISSION_DENIED" here, your Firebase rules for player scores need adjustment.
     }
   } else {
     console.log('No whackable mole found at clicked index or already whacked.')
   }
 }
-// --- Game State Update (for host to end game) ---
+
 async function updateGameState(status) {
   if (!props.roomId) return
   const user = auth.currentUser
   if (!user) return
 
-  if (gameState.value.hostId !== user.uid) {
+  if (gameState.value.hostId !== user.uid && status !== 'ended') {
     console.warn('Only the host can change game state.')
     return
   }
 
   try {
     await update(gameRef.value, { gameState: status })
-    console.log(`Game state updated to: ${status} by host.`)
-    // Host specifically clears moles when game ends
+    console.log(`Game state updated to: ${status} by host (or triggered by timer).`)
     if (status === 'ended') {
       await remove(molesRef.value)
     }
@@ -388,8 +351,7 @@ async function updateGameState(status) {
   }
 }
 
-// --- Leave Room Logic (for all players) ---
-async function leaveRoom() {
+async function autoLeaveRoom() {
   const user = auth.currentUser
   if (!user || !props.roomId) return
 
@@ -422,8 +384,6 @@ async function leaveRoom() {
       console.log(`Room ${currentRoomId} still has players.`)
     }
 
-    // Clean up local state and listeners
-    // Unsubscribe from Firebase listeners
     if (unsubscribeGameState) {
       unsubscribeGameState()
       unsubscribeGameState = null
@@ -432,17 +392,21 @@ async function leaveRoom() {
       unsubscribeMoles()
       unsubscribeMoles = null
     }
-    stopMoleGeneration() // Stop mole generation if this client was host
+    stopMoleGeneration()
+    if (gameTimerInterval) {
+      clearInterval(gameTimerInterval)
+      gameTimerInterval = null
+    }
 
     gameState.value = {}
     currentVisibleMoles.value = {}
-    router.push({ name: 'lobby' }) // Navigate back to the lobby
+    gameTimeRemaining.value = 0
+    router.push({ name: 'lobby' })
   } catch (err) {
-    console.error('Error leaving room:', err)
+    console.error('Error automatically leaving room:', err)
   }
 }
 
-// --- Firebase Listeners for GameView ---
 function listenForGameState() {
   if (unsubscribeGameState) {
     unsubscribeGameState()
@@ -450,17 +414,28 @@ function listenForGameState() {
   if (props.roomId) {
     unsubscribeGameState = onValue(gameRef.value, (snapshot) => {
       if (snapshot.exists()) {
-        gameState.value = snapshot.val()
-        // If game state changes to not playing, navigate back to lobby
-        if (gameState.value.gameState !== 'playing' && router.currentRoute.value.name === 'game') {
-          console.log("Game state is not 'playing'. Redirecting to lobby.")
-          router.push({ name: 'lobby' })
+        const data = snapshot.val()
+        gameState.value = data
+
+        startOrUpdateGameTimer()
+
+        if (data.gameState === 'ended' && router.currentRoute.value.name === 'game') {
+          console.log("Game state is 'ended'. Automatically leaving room and redirecting to lobby.")
+          autoLeaveRoom()
+        } else if (
+          data.gameState !== 'playing' &&
+          router.currentRoute.value.name === 'game' &&
+          data.gameState !== 'ended'
+        ) {
+          console.log("Game state is not 'playing' or 'ended'. Redirecting to lobby.")
+
+          autoLeaveRoom()
         }
       } else {
-        // Room was deleted while user was in game
-        console.log(`Room ${props.roomId} was deleted. Redirecting to lobby.`)
-        gameState.value = {}
-        router.push({ name: 'lobby' })
+        console.log(
+          `Room ${props.roomId} was deleted. Automatically leaving room and redirecting to lobby.`,
+        )
+        autoLeaveRoom()
       }
     })
   } else {
@@ -476,14 +451,10 @@ function listenForMoles() {
     unsubscribeMoles = onValue(molesRef.value, (snapshot) => {
       const molesData = snapshot.val()
       if (molesData) {
-        // Ensure molesData is always an object, not just if it exists.
-        // Firebase .val() returns null if no data, otherwise an object.
-        // We want to ensure that if a mole is removed, its entry is null, not the entire list.
-        // The Proxy(Object) output you showed indicates it IS an object.
         currentVisibleMoles.value = molesData
         console.log('Current moles from Firebase:', molesData)
       } else {
-        currentVisibleMoles.value = {} // Always ensure it's an empty object if no moles
+        currentVisibleMoles.value = {}
         console.log('No moles from Firebase. Setting currentVisibleMoles to empty object.')
       }
     })
@@ -492,8 +463,6 @@ function listenForMoles() {
   }
 }
 
-// --- Watchers for GameView ---
-// Watch gameState.value.gameState to trigger mole generation/stopping for the host
 watch(
   () => gameState.value.gameState,
   (newStatus) => {
@@ -504,47 +473,55 @@ watch(
       stopMoleGeneration()
     }
   },
-  { immediate: true }, // Run immediately on component mount/if gameState is already set
+  { immediate: true },
 )
 
 watch(
   () => props.roomId,
   (newRoomId) => {
     if (newRoomId) {
+      listenForGameState()
       listenForMoles()
     } else {
-      // If roomId becomes null/undefined, clean up moles and listener
+      if (unsubscribeGameState) {
+        unsubscribeGameState()
+        unsubscribeGameState = null
+      }
       if (unsubscribeMoles) {
         unsubscribeMoles()
         unsubscribeMoles = null
       }
+      stopMoleGeneration()
+      if (gameTimerInterval) {
+        clearInterval(gameTimerInterval)
+        gameTimerInterval = null
+      }
+      gameState.value = {}
       currentVisibleMoles.value = {}
+      gameTimeRemaining.value = 0
     }
   },
   { immediate: true },
 )
 
-// --- Lifecycle Hooks ---
 onMounted(() => {
-  // GameView gets roomId from props, so use it to set up listeners immediately
-  if (props.roomId) {
-    listenForGameState() // This will also handle initial navigation away if state is not 'playing'
-    listenForMoles()
-  } else {
-    // If for some reason roomId isn't provided (e.g., direct URL access without ID)
+  if (!props.roomId) {
     router.push({ name: 'lobby' })
   }
 })
 
 onUnmounted(() => {
-  // Crucial: Clean up all listeners and intervals when leaving the game view
   if (unsubscribeGameState) {
     unsubscribeGameState()
   }
   if (unsubscribeMoles) {
     unsubscribeMoles()
   }
-  stopMoleGeneration() // Ensure interval is cleared
+  stopMoleGeneration()
+  if (gameTimerInterval) {
+    clearInterval(gameTimerInterval)
+    gameTimerInterval = null
+  }
 })
 </script>
 
