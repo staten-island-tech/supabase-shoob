@@ -16,7 +16,6 @@
         <div v-for="(player, id) in gameState.players" :key="id" class="player-score-card">
           <h4>{{ player.displayName }}</h4>
           <p>Score: {{ player.score || 0 }}</p>
-          <p>Ability: {{ player.abilityPoints || 0 }}</p>
           <span v-if="gameState.hostId === id"> (Host)</span>
           <span v-if="auth.currentUser && id === auth.currentUser.uid"> (You)</span>
         </div>

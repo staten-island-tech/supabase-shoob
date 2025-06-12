@@ -3,8 +3,8 @@
     <header>
       <div class="wrapper">
         <nav>
-          <RouterLink v-if="authStore.user" to="/lobby">gameroom</RouterLink>
-          <RouterLink v-if="authStore.user" to="/profile">profile</RouterLink>
+          <RouterLink class="button" v-if="authStore.user" to="/lobby">gameroom</RouterLink>
+          <RouterLink class="button" v-if="authStore.user" to="/profile">profile</RouterLink>
           <button v-if="authStore.user" :userData="user" @click="logout">Logout</button>
         </nav>
       </div>
@@ -77,5 +77,12 @@ header {
 
 .stuff {
   background-color: white;
+}
+
+.button {
+  padding: 2px;
+  margin: 0 10px 0 0;
+  background-color: aqua;
+  border-radius: 4px;
 }
 </style>
