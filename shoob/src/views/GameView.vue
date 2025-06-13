@@ -55,7 +55,7 @@
           >
             <img
               v-if="mole.index === n - 1"
-              class="mole-img"
+              class="mole-img unsearchable"
               :alt="mole.type"
               draggable="false"
               :src="mole.type === 'normal' ? '/enemy.png' : '/enemyBlue.png'"
@@ -624,6 +624,15 @@ onUnmounted(() => {
 
 .hole {
   cursor: pointer;
+}
+
+.unsearchable {
+  user-drag: none; 
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 /* Animations */
