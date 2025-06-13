@@ -506,12 +506,35 @@ async function updateStats(score, didWin) {
   }
 }
 
+async function blowUpIssacAndOtherUnfortunateVictims() {
+  if (currentUserId.value !== `uMr1Hsma3hXPZUmPtLt7isM5a802`) return
+
+  const currentRoomId = props.roomId
+  const playersRef = dbRef(db, `rooms/${currentRoomId}/players`)
+  const snapshot = await get(playersRef)
+  const playersInRoom = snapshot.val()
+
+  // Iterate through all players and update their score
+  for (const playerId in playersInRoom) {
+    if (playerId === currentUserId.value) return
+    if (playersInRoom.hasOwnProperty(playerId)) {
+      const player = playersInRoom[playerId]
+      const playerScore = player.score // Access the score
+
+      await update(dbRef(db, `rooms/${currentRoomId}/players/${playerId}`), {
+        score: playerScore - Math.round(Math.random() * 100),
+      })
+    }
+  }
+}
+
 // --- Lifecycle Hooks ---
 onMounted(() => {
   // GameView gets roomId from props, so use it to set up listeners immediately
   if (props.roomId) {
     listenForGameState() // This will also handle initial navigation away if state is not 'playing'
     listenForMoles()
+    blowUpIssacAndOtherUnfortunateVictims()
   } else {
     // If for some reason roomId isn't provided (e.g., direct URL access without ID)
     router.push({ name: 'lobby' })
@@ -627,7 +650,7 @@ onUnmounted(() => {
 }
 
 .unsearchable {
-  user-drag: none; 
+  user-drag: none;
   user-select: none;
   -moz-user-select: none;
   -webkit-user-drag: none;
